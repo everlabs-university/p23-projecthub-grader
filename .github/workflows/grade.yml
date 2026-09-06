@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Отримати репозиторій студента
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - name: Налаштувати Node.js 22
         uses: actions/setup-node@v5
         with:
