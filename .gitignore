@@ -1,0 +1,5 @@
+node_modules/
+.projecthub-grader/
+coverage/
+dist/
+.DS_Store

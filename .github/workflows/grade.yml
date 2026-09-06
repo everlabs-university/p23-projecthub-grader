@@ -1,0 +1,29 @@
+name: ProjectHub — автотести
+
+on:
+  workflow_call:
+
+concurrency:
+  group: projecthub-grade-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  grade:
+    name: Автотести ProjectHub
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Отримати репозиторій студента
+        uses: actions/checkout@v5
+      - name: Налаштувати Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Встановити залежності
+        run: npm ci --ignore-scripts
+      - name: Оцінити практичні
+        uses: everlabs-university/p23-projecthub-grader@semester-2026
