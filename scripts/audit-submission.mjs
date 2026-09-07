@@ -14,7 +14,7 @@ const EXIT_VALID = 0;
 const EXIT_INVALID = 1;
 const EXIT_INFRASTRUCTURE = 2;
 
-const USAGE = 'Використання: node scripts/audit-submission.mjs --student-root <абсолютний шлях> --expected-sha <40 hex>';
+const USAGE = 'Usage: node scripts/audit-submission.mjs --student-root <absolute path> --expected-sha <40 hex>';
 const OPTIONS = new Map([
   ['--student-root', 'studentRoot'],
   ['--expected-sha', 'expectedSha'],
@@ -85,28 +85,28 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
     const key = OPTIONS.get(flag);
-    if (key === undefined) throw usageError(`невідомий аргумент «${flag}». ${USAGE}`);
-    if (args[key] !== undefined) throw usageError(`аргумент ${flag} вказано більше одного разу. ${USAGE}`);
+    if (key === undefined) throw usageError(`unknown argument "${flag}". ${USAGE}`);
+    if (args[key] !== undefined) throw usageError(`argument ${flag} was supplied more than once. ${USAGE}`);
     index += 1;
-    if (index >= argv.length) throw usageError(`аргумент ${flag} потребує значення. ${USAGE}`);
+    if (index >= argv.length) throw usageError(`argument ${flag} requires a value. ${USAGE}`);
     args[key] = argv[index];
   }
   for (const [flag, key] of OPTIONS) {
-    if (args[key] === undefined) throw usageError(`аргумент ${flag} обов'язковий. ${USAGE}`);
+    if (args[key] === undefined) throw usageError(`argument ${flag} is required. ${USAGE}`);
   }
   return args;
 }
 
 function parseExpectedSha(value) {
   if (!isNonEmptyString(value) || !SHA_PATTERN.test(value)) {
-    throw usageError(`--expected-sha має бути commit-ідентифікатором рівно з 40 hex-символів, отримано «${value}». ${USAGE}`);
+    throw usageError(`--expected-sha must be a commit id of exactly 40 hex characters, received "${value}". ${USAGE}`);
   }
   return value.toLowerCase();
 }
 
 async function resolveStudentRoot(value) {
   if (!isNonEmptyString(value) || !isAbsolute(value)) {
-    throw usageError(`--student-root має бути абсолютним шляхом, отримано «${value}». ${USAGE}`);
+    throw usageError(`--student-root must be an absolute path, received "${value}". ${USAGE}`);
   }
   let studentRoot;
   let stats;
@@ -114,9 +114,9 @@ async function resolveStudentRoot(value) {
     studentRoot = await realpath(value);
     stats = await stat(studentRoot);
   } catch (cause) {
-    throw infrastructureError(`корінь репозиторію студента недоступний (${value}): ${cause.message}`);
+    throw infrastructureError(`the student repository root is not accessible (${value}): ${cause.message}`);
   }
-  if (!stats.isDirectory()) throw infrastructureError(`корінь репозиторію студента має бути каталогом: ${studentRoot}`);
+  if (!stats.isDirectory()) throw infrastructureError(`the student repository root must be a directory: ${studentRoot}`);
   return studentRoot;
 }
 
@@ -143,13 +143,13 @@ async function runGit(args, cwd) {
   try {
     return await spawnGit(args, cwd);
   } catch (cause) {
-    throw infrastructureError(`не вдалося запустити «git ${args.join(' ')}»: ${cause.message}`);
+    throw infrastructureError(`could not run "git ${args.join(' ')}": ${cause.message}`);
   }
 }
 
 function describeGitFailure(args, result) {
-  const exitStatus = result.signal === null ? `код виходу ${result.code}` : `сигнал ${result.signal}`;
-  return `«git ${args.join(' ')}» завершився ${exitStatus}${detailSuffix(result.stderr)}`;
+  const exitStatus = result.signal === null ? `exit code ${result.code}` : `signal ${result.signal}`;
+  return `"git ${args.join(' ')}" exited with ${exitStatus}${detailSuffix(result.stderr)}`;
 }
 
 async function gitStdout(args, cwd) {
@@ -161,17 +161,17 @@ async function gitStdout(args, cwd) {
 async function assertGitWorkTree(studentRoot) {
   const inside = await runGit(['rev-parse', '--is-inside-work-tree'], studentRoot);
   if (inside.code !== 0 || inside.stdout.trim() !== 'true') {
-    throw infrastructureError(`${studentRoot} не є робочим деревом Git${detailSuffix(inside.stderr)}.`);
+    throw infrastructureError(`${studentRoot} is not a Git work tree${detailSuffix(inside.stderr)}.`);
   }
   const toplevel = firstLine(await gitStdout(['rev-parse', '--show-toplevel'], studentRoot));
   let resolvedToplevel;
   try {
     resolvedToplevel = await realpath(toplevel);
   } catch (cause) {
-    throw infrastructureError(`корінь Git-репозиторію недоступний (${toplevel}): ${cause.message}`);
+    throw infrastructureError(`the Git repository root is not accessible (${toplevel}): ${cause.message}`);
   }
   if (resolvedToplevel !== studentRoot) {
-    throw infrastructureError(`--student-root має бути коренем Git-репозиторію: git показує ${resolvedToplevel}, а не ${studentRoot}.`);
+    throw infrastructureError(`--student-root must be the Git repository root: git reports ${resolvedToplevel}, not ${studentRoot}.`);
   }
 }
 
@@ -179,15 +179,15 @@ async function assertCleanWorkTree(studentRoot) {
   const stdout = await gitStdout(['status', '--porcelain', '--untracked-files=all'], studentRoot);
   const entries = stdout.split('\n').map((line) => line.trim()).filter((line) => line !== '');
   if (entries.length > 0) {
-    throw submissionError(`робоче дерево не чисте: ${entries.length} незакомічених записів, зокрема ${entries.slice(0, 3).join('; ')}.`);
+    throw submissionError(`the working tree is not clean: ${entries.length} uncommitted entries, including ${entries.slice(0, 3).join('; ')}.`);
   }
 }
 
 async function readHead(studentRoot) {
   const result = await runGit(['rev-parse', '--verify', 'HEAD'], studentRoot);
-  if (result.code !== 0) throw submissionError(`не вдалося визначити HEAD репозиторію студента${detailSuffix(result.stderr)}.`);
+  if (result.code !== 0) throw submissionError(`could not resolve HEAD of the student repository${detailSuffix(result.stderr)}.`);
   const head = firstLine(result.stdout);
-  if (!SHA_PATTERN.test(head)) throw infrastructureError(`git повернув некоректний HEAD «${head}».`);
+  if (!SHA_PATTERN.test(head)) throw infrastructureError(`git returned a malformed HEAD "${head}".`);
   return head.toLowerCase();
 }
 
@@ -199,7 +199,7 @@ async function readCanonicalWorkflow() {
   try {
     return await readUtf8Text(CANONICAL_WORKFLOW);
   } catch (cause) {
-    throw infrastructureError(`еталонний workflow неможливо прочитати (${CANONICAL_WORKFLOW}): ${cause.message}`);
+    throw infrastructureError(`the canonical workflow cannot be read (${CANONICAL_WORKFLOW}): ${cause.message}`);
   }
 }
 
@@ -208,8 +208,8 @@ async function readCandidateWorkflow(studentRoot) {
   try {
     return await readUtf8Text(path);
   } catch (cause) {
-    if (cause?.code === 'ENOENT') throw submissionError(`student workflow відсутній: ${path}`);
-    throw submissionError(`student workflow неможливо прочитати (${path}): ${cause.message}`);
+    if (cause?.code === 'ENOENT') throw submissionError(`the student workflow is missing: ${path}`);
+    throw submissionError(`the student workflow cannot be read (${path}): ${cause.message}`);
   }
 }
 
@@ -218,7 +218,7 @@ function reportValid(head, audit) {
     'ProjectHub audit: VALID',
     `- HEAD: ${head}`,
     `- SHA-256 student workflow: ${audit.candidateSha256}`,
-    `- SHA-256 еталонного workflow: ${audit.canonicalSha256}`,
+    `- SHA-256 canonical workflow: ${audit.canonicalSha256}`,
     '',
   ].join('\n'));
 }
@@ -230,12 +230,12 @@ async function main() {
   await assertGitWorkTree(studentRoot);
   await assertCleanWorkTree(studentRoot);
   const head = await readHead(studentRoot);
-  if (head !== expectedSha) throw submissionError(`HEAD ${head} не збігається з очікуваним commit ${expectedSha}.`);
+  if (head !== expectedSha) throw submissionError(`HEAD ${head} does not match the expected commit ${expectedSha}.`);
   const canonicalText = await readCanonicalWorkflow();
   const candidateText = await readCandidateWorkflow(studentRoot);
   const audit = auditWorkflow({ candidateText, canonicalText });
   if (!audit.valid) {
-    throw submissionError(`student workflow відрізняється від еталона байт-у-байт: SHA-256 ${audit.candidateSha256} замість ${audit.canonicalSha256}.`);
+    throw submissionError(`the student workflow differs from the canonical workflow byte for byte: SHA-256 ${audit.candidateSha256} instead of ${audit.canonicalSha256}.`);
   }
   reportValid(head, audit);
   return EXIT_VALID;

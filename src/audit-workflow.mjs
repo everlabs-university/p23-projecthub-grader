@@ -18,7 +18,7 @@ function formatValue(value) {
 
 function toUtf8Bytes(value, field) {
   if (typeof value !== 'string') {
-    throw auditError(`${field} має бути рядком з текстом workflow, отримано ${formatValue(value)}.`);
+    throw auditError(`${field} must be a string containing the workflow text, received ${formatValue(value)}.`);
   }
   return Buffer.from(value, 'utf8');
 }
@@ -29,7 +29,7 @@ function sha256Hex(bytes) {
 
 export function auditWorkflow(input) {
   if (!isPlainObject(input)) {
-    throw auditError(`Аргумент auditWorkflow має бути об'єктом {candidateText, canonicalText}, отримано ${formatValue(input)}.`);
+    throw auditError(`The auditWorkflow argument must be an object {candidateText, canonicalText}, received ${formatValue(input)}.`);
   }
   const candidateBytes = toUtf8Bytes(input.candidateText, 'candidateText');
   const canonicalBytes = toUtf8Bytes(input.canonicalText, 'canonicalText');

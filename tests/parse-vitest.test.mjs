@@ -3,20 +3,20 @@ import assert from 'node:assert/strict';
 
 import { parseVitestJson } from '../src/parse-vitest.mjs';
 
-const HOME = '/ показує головну сторінку ProjectHub';
-const LIST = '/projects показує список проєктів';
-const DETAIL = '/projects/:projectId показує сторінку конкретного проєкту';
-const NOT_FOUND = 'невідомий URL показує сторінку 404';
-const CLIENT_NAV = 'навігація через UI змінює маршрут без повного reload';
-const CART_TOTAL = 'кошик рахує загальну суму';
-const CART_EMPTY = 'порожній кошик показує підказку';
+const HOME = '/ renders the ProjectHub home page';
+const LIST = '/projects renders the project list';
+const DETAIL = '/projects/:projectId renders a single project page';
+const NOT_FOUND = 'an unknown URL renders the 404 page';
+const CLIENT_NAV = 'UI navigation changes the route without a full reload';
+const CART_TOTAL = 'the cart calculates the total';
+const CART_EMPTY = 'an empty cart shows a hint';
 
 const PR01_FILE =
   '/home/runner/work/projecthub/projecthub/.projecthub-grader/labs/pr01/routes.test.tsx';
 const PR02_FILE =
   '/home/runner/work/projecthub/projecthub/.projecthub-grader/labs/pr02/cart.test.tsx';
 
-/** Вивід `vitest --reporter=json` (Vitest 5) для одного lab-файлу. */
+/** Output of `vitest --reporter=json` (Vitest 5) for a single lab file. */
 const SINGLE_FILE_REPORT = `{
   "numTotalTestSuites": 1,
   "numPassedTestSuites": 0,
@@ -79,7 +79,7 @@ const SINGLE_FILE_REPORT = `{
 }
 `;
 
-/** Той самий репортер, коли published.json містить дві практичні. */
+/** The same reporter when published.json lists two practicals. */
 const TWO_FILE_REPORT = `{
   "numTotalTestSuites": 2,
   "numPassedTestSuites": 1,
@@ -164,7 +164,7 @@ const TWO_FILE_REPORT = `{
 }
 `;
 
-/** `todo` і `pending` приходять зі StatusMap Vitest, `flaky` — сторонній репортер. */
+/** `todo` and `pending` come from the Vitest StatusMap; `flaky` comes from a third-party reporter. */
 const MIXED_STATUS_REPORT = `{
   "numTotalTestSuites": 1,
   "numPassedTestSuites": 0,
@@ -238,7 +238,7 @@ const MIXED_STATUS_REPORT = `{
 }
 `;
 
-/** Suite впав на імпорті `@student/App`, тому Vitest не зібрав жодного тесту. */
+/** The suite failed while importing `@student/App`, so Vitest collected no tests. */
 const EMPTY_ASSERTIONS_REPORT = `{
   "numTotalTestSuites": 1,
   "numPassedTestSuites": 0,
@@ -265,7 +265,7 @@ const EMPTY_ASSERTIONS_REPORT = `{
 }
 `;
 
-/** Репортер обірвався посеред запису файлу. */
+/** The reporter was cut off midway through writing the file. */
 const MALFORMED_REPORT = `{
   "numTotalTests": 8,
   "numPassedTests": 8,

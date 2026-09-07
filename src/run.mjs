@@ -27,7 +27,7 @@ const OPTIONS = new Map([
   ['--grader-version', 'graderVersion'],
 ]);
 
-const USAGE = 'Використання: node src/run.mjs --student-root <абсолютний шлях> --sha <40 hex> --summary-file <шлях> [--grader-version <версія>]';
+const USAGE = 'Usage: node src/run.mjs --student-root <absolute path> --sha <40 hex> --summary-file <path> [--grader-version <version>]';
 
 function runnerError(message) {
   const error = new Error(message);
@@ -46,13 +46,13 @@ function parseArgs(argv) {
     const separator = token.indexOf('=');
     const flag = separator === -1 ? token : token.slice(0, separator);
     const key = OPTIONS.get(flag);
-    if (key === undefined) throw runnerError(`Невідомий аргумент «${token}». ${USAGE}`);
+    if (key === undefined) throw runnerError(`Unknown argument "${token}". ${USAGE}`);
     if (separator !== -1) {
       args[key] = token.slice(separator + 1);
       continue;
     }
     index += 1;
-    if (index >= argv.length) throw runnerError(`Аргумент ${flag} потребує значення. ${USAGE}`);
+    if (index >= argv.length) throw runnerError(`Argument ${flag} requires a value. ${USAGE}`);
     args[key] = argv[index];
   }
   return args;
@@ -63,22 +63,22 @@ async function assertDirectory(path, subject) {
   try {
     stats = await stat(path);
   } catch (cause) {
-    throw runnerError(`${subject} недоступний (${path}): ${cause.message}`);
+    throw runnerError(`${subject} is not accessible (${path}): ${cause.message}`);
   }
-  if (!stats.isDirectory()) throw runnerError(`${subject} має бути каталогом: ${path}`);
+  if (!stats.isDirectory()) throw runnerError(`${subject} must be a directory: ${path}`);
 }
 
 async function validateArgs(args) {
   if (!isNonEmptyString(args.studentRoot) || !isAbsolute(args.studentRoot)) {
-    throw runnerError(`--student-root має бути абсолютним шляхом, отримано «${args.studentRoot ?? ''}». ${USAGE}`);
+    throw runnerError(`--student-root must be an absolute path, received "${args.studentRoot ?? ''}". ${USAGE}`);
   }
-  await assertDirectory(args.studentRoot, 'Корінь репозиторію студента');
+  await assertDirectory(args.studentRoot, 'The student repository root');
   if (!isNonEmptyString(args.sha) || !SHA_PATTERN.test(args.sha)) {
-    throw runnerError(`--sha має бути commit-ідентифікатором рівно з 40 hex-символів, отримано «${args.sha ?? ''}».`);
+    throw runnerError(`--sha must be a commit id of exactly 40 hex characters, received "${args.sha ?? ''}".`);
   }
-  if (!isNonEmptyString(args.summaryFile)) throw runnerError(`--summary-file має бути непорожнім шляхом до файлу підсумку. ${USAGE}`);
+  if (!isNonEmptyString(args.summaryFile)) throw runnerError(`--summary-file must be a non-empty path to the summary file. ${USAGE}`);
   if (args.graderVersion !== undefined && !isNonEmptyString(args.graderVersion)) {
-    throw runnerError('--grader-version, якщо вказано, має бути непорожнім рядком.');
+    throw runnerError('--grader-version, when supplied, must be a non-empty string.');
   }
 }
 
@@ -90,7 +90,7 @@ async function findVitest(studentRoot) {
       return candidate;
     } catch {}
   }
-  throw runnerError(`Не знайдено виконуваний файл Vitest: ${candidates.join(', ')}.`);
+  throw runnerError(`No Vitest executable was found: ${candidates.join(', ')}.`);
 }
 
 async function prepareSuite(studentRoot, labs) {
@@ -99,7 +99,7 @@ async function prepareSuite(studentRoot, labs) {
   await mkdir(suiteRoot, { recursive: true });
   for (const labId of labs) {
     const source = join(GRADER_ROOT, 'labs', labId);
-    await assertDirectory(source, `Каталог тестів практичної «${labId}»`);
+    await assertDirectory(source, `The test directory for lab "${labId}"`);
     await cp(source, join(suiteRoot, 'labs', labId), { recursive: true });
   }
   await cp(join(GRADER_ROOT, CONFIG_FILENAME), join(suiteRoot, CONFIG_FILENAME));
@@ -126,8 +126,8 @@ async function readReport(reportPath, run) {
   try {
     return parseVitestJson(await readFile(reportPath, 'utf8'));
   } catch (cause) {
-    const exitStatus = run.signal === null ? `код виходу ${run.code}` : `сигнал ${run.signal}`;
-    throw runnerError(`Не вдалося прочитати JSON-звіт Vitest (${reportPath}); ${exitStatus}: ${cause.message}\n${run.output.trim()}`);
+    const exitStatus = run.signal === null ? `exit code ${run.code}` : `signal ${run.signal}`;
+    throw runnerError(`Could not read the Vitest JSON report (${reportPath}); ${exitStatus}: ${cause.message}\n${run.output.trim()}`);
   }
 }
 

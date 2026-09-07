@@ -32,35 +32,35 @@ function describeFile(file, index) {
 
 export function parseVitestJson(raw) {
   if (typeof raw !== 'string') {
-    throw parseError('ERR_VITEST_JSON_MALFORMED', `Звіт Vitest має бути рядком JSON, отримано ${formatValue(raw)}.`);
+    throw parseError('ERR_VITEST_JSON_MALFORMED', `The Vitest report must be a JSON string, received ${formatValue(raw)}.`);
   }
 
   let report;
   try {
     report = JSON.parse(raw);
   } catch (cause) {
-    throw parseError('ERR_VITEST_JSON_MALFORMED', `Звіт Vitest містить некоректний JSON: ${cause.message}`);
+    throw parseError('ERR_VITEST_JSON_MALFORMED', `The Vitest report contains malformed JSON: ${cause.message}`);
   }
 
   if (!isPlainObject(report)) {
-    throw parseError('ERR_VITEST_JSON_SHAPE', `Звіт Vitest має бути JSON-об'єктом, отримано ${formatValue(report)}.`);
+    throw parseError('ERR_VITEST_JSON_SHAPE', `The Vitest report must be a JSON object, received ${formatValue(report)}.`);
   }
   if (!Array.isArray(report.testResults)) {
-    throw parseError('ERR_VITEST_JSON_SHAPE', `Звіт Vitest: testResults має бути масивом, отримано ${formatValue(report.testResults)}.`);
+    throw parseError('ERR_VITEST_JSON_SHAPE', `Vitest report: testResults must be an array, received ${formatValue(report.testResults)}.`);
   }
 
   const assertions = [];
   for (const [fileIndex, file] of report.testResults.entries()) {
     if (!isPlainObject(file)) {
-      throw parseError('ERR_VITEST_JSON_SHAPE', `Звіт Vitest: testResults[${fileIndex}] має бути JSON-об'єктом, отримано ${formatValue(file)}.`);
+      throw parseError('ERR_VITEST_JSON_SHAPE', `Vitest report: testResults[${fileIndex}] must be a JSON object, received ${formatValue(file)}.`);
     }
     const fileName = describeFile(file, fileIndex);
     if (!Array.isArray(file.assertionResults)) {
-      throw parseError('ERR_VITEST_JSON_SHAPE', `Звіт Vitest (${fileName}): assertionResults має бути масивом, отримано ${formatValue(file.assertionResults)}.`);
+      throw parseError('ERR_VITEST_JSON_SHAPE', `Vitest report (${fileName}): assertionResults must be an array, received ${formatValue(file.assertionResults)}.`);
     }
     for (const [index, assertion] of file.assertionResults.entries()) {
       if (!isPlainObject(assertion) || !isNonEmptyString(assertion.fullName)) {
-        throw parseError('ERR_VITEST_JSON_SHAPE', `Звіт Vitest (${fileName}): assertionResults[${index}].fullName має бути непорожнім рядком, отримано ${formatValue(assertion?.fullName)}.`);
+        throw parseError('ERR_VITEST_JSON_SHAPE', `Vitest report (${fileName}): assertionResults[${index}].fullName must be a non-empty string, received ${formatValue(assertion?.fullName)}.`);
       }
       assertions.push({ fullName: assertion.fullName, status: normaliseStatus(assertion.status) });
     }

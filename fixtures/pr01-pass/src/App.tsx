@@ -1,6 +1,6 @@
 import { BrowserRouter, Link, Route, Routes, useParams } from 'react-router-dom';
 
-/** Known-good фікстура PR01: усі вісім видимих поведінок реалізовано, очікується 80/80. */
+/** Known-good PR01 fixture: all eight visible behaviours are implemented, 80/80 expected. */
 
 type Project = {
   id: string;
@@ -11,18 +11,18 @@ type Project = {
 const PROJECTS: Project[] = [
   {
     id: 'onboarding',
-    title: 'Онбординг команди',
-    summary: 'Чеклист і матеріали для перших двох тижнів нового розробника.',
+    title: 'Team onboarding',
+    summary: 'A checklist and materials for a new developer’s first two weeks.',
   },
   {
     id: 'analytics',
-    title: 'Аналітика продукту',
-    summary: 'Дашборди активації, утримання та тижневої активної аудиторії.',
+    title: 'Product analytics',
+    summary: 'Dashboards for activation, retention and weekly active users.',
   },
   {
     id: 'mobile-app',
-    title: 'Мобільний застосунок',
-    summary: 'Клієнт для iOS та Android на спільному API ProjectHub.',
+    title: 'Mobile app',
+    summary: 'An iOS and Android client on the shared ProjectHub API.',
   },
 ];
 
@@ -30,7 +30,7 @@ function HomePage() {
   return (
     <section>
       <h1>ProjectHub</h1>
-      <p>Місце, де команда бачить усі свої проєкти в одному списку.</p>
+      <p>The place where the team sees all of its projects in a single list.</p>
     </section>
   );
 }
@@ -38,7 +38,7 @@ function HomePage() {
 function ProjectsPage() {
   return (
     <section>
-      <h1>Проєкти</h1>
+      <h1>Projects</h1>
       <ul>
         {PROJECTS.map((project) => (
           <li key={project.id}>
@@ -57,9 +57,9 @@ function ProjectDetailPage() {
   if (!project) {
     return (
       <section>
-        <h1>Проєкт не знайдено</h1>
-        <p>Проєкту з ідентифікатором «{projectId}» немає у списку.</p>
-        <Link to="/projects">До списку проєктів</Link>
+        <h1>Project not found</h1>
+        <p>There is no project with the id “{projectId}” in the list.</p>
+        <Link to="/projects">Back to the project list</Link>
       </section>
     );
   }
@@ -68,7 +68,7 @@ function ProjectDetailPage() {
     <section>
       <h1>{project.title}</h1>
       <p>{project.summary}</p>
-      <Link to="/projects">До списку проєктів</Link>
+      <Link to="/projects">Back to the project list</Link>
     </section>
   );
 }
@@ -76,9 +76,9 @@ function ProjectDetailPage() {
 function NotFoundPage() {
   return (
     <section>
-      <h1>404 — сторінку не знайдено</h1>
-      <p>Перевірте адресу або поверніться на головну.</p>
-      <Link to="/">На головну</Link>
+      <h1>404 — page not found</h1>
+      <p>Check the address or go back to the home page.</p>
+      <Link to="/">Home</Link>
     </section>
   );
 }
@@ -88,9 +88,9 @@ export default function App() {
     <BrowserRouter>
       <div className="app">
         <header>
-          <nav aria-label="Основна навігація">
-            <Link to="/">Головна</Link>
-            <Link to="/projects">Проєкти</Link>
+          <nav aria-label="Main navigation">
+            <Link to="/">Home</Link>
+            <Link to="/projects">Projects</Link>
           </nav>
         </header>
         <main>

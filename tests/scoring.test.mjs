@@ -3,18 +3,18 @@ import assert from 'node:assert/strict';
 
 import { scoreLab } from '../src/scoring.mjs';
 
-const HOME = '/ показує головну сторінку ProjectHub';
-const LIST = '/projects показує список проєктів';
-const DETAIL = '/projects/:projectId показує сторінку конкретного проєкту';
-const NOT_FOUND = 'невідомий URL показує сторінку 404';
-const CLIENT_NAV = 'навігація через UI змінює маршрут без повного reload';
-const DIRECT_ENTRY = 'прямий перехід на detail route працює';
-const MISSING_ID = 'відсутній projectId обробляється контрольовано';
-const A11Y_LINKS = 'базові посилання мають доступні назви';
+const HOME = '/ renders the ProjectHub home page';
+const LIST = '/projects renders the project list';
+const DETAIL = '/projects/:projectId renders a single project page';
+const NOT_FOUND = 'an unknown URL renders the 404 page';
+const CLIENT_NAV = 'UI navigation changes the route without a full reload';
+const DIRECT_ENTRY = 'direct entry to a detail route works';
+const MISSING_ID = 'a missing projectId is handled gracefully';
+const A11Y_LINKS = 'primary links have accessible names';
 
 const PR01_RUBRIC = {
   id: 'pr01',
-  title: 'Практична №1 — React Router',
+  title: 'Practical 1 — React Router',
   maxPoints: 80,
   passPoints: 48,
   tests: [
@@ -44,7 +44,7 @@ describe('scoreLab', () => {
 
     assert.deepStrictEqual(score, {
       id: 'pr01',
-      title: 'Практична №1 — React Router',
+      title: 'Practical 1 — React Router',
       points: 80,
       maxPoints: 80,
       status: 'PASS',
@@ -67,7 +67,7 @@ describe('scoreLab', () => {
 
     assert.deepStrictEqual(score, {
       id: 'pr01',
-      title: 'Практична №1 — React Router',
+      title: 'Practical 1 — React Router',
       points: 50,
       maxPoints: 80,
       status: 'PASS',
@@ -90,7 +90,7 @@ describe('scoreLab', () => {
 
     assert.deepStrictEqual(score, {
       id: 'pr01',
-      title: 'Практична №1 — React Router',
+      title: 'Practical 1 — React Router',
       points: 40,
       maxPoints: 80,
       status: 'FAIL',
@@ -113,7 +113,7 @@ describe('scoreLab', () => {
 
     assert.deepStrictEqual(score, {
       id: 'pr01',
-      title: 'Практична №1 — React Router',
+      title: 'Practical 1 — React Router',
       points: 70,
       maxPoints: 80,
       status: 'PASS',
@@ -132,15 +132,15 @@ describe('scoreLab', () => {
       { fullName: DIRECT_ENTRY, status: 'failed' },
       { fullName: MISSING_ID, status: 'failed' },
       { fullName: A11Y_LINKS, status: 'failed' },
-      { fullName: 'зайвий тест поза rubric #1', status: 'passed' },
-      { fullName: 'зайвий тест поза rubric #2', status: 'passed' },
-      { fullName: 'зайвий тест поза rubric #3', status: 'passed' },
-      { fullName: 'зайвий тест поза rubric #4', status: 'passed' },
+      { fullName: 'extra test outside the rubric #1', status: 'passed' },
+      { fullName: 'extra test outside the rubric #2', status: 'passed' },
+      { fullName: 'extra test outside the rubric #3', status: 'passed' },
+      { fullName: 'extra test outside the rubric #4', status: 'passed' },
     ]);
 
     assert.deepStrictEqual(score, {
       id: 'pr01',
-      title: 'Практична №1 — React Router',
+      title: 'Practical 1 — React Router',
       points: 40,
       maxPoints: 80,
       status: 'FAIL',
@@ -158,7 +158,7 @@ describe('scoreLab', () => {
 
     assert.deepStrictEqual(score, {
       id: 'pr01',
-      title: 'Практична №1 — React Router',
+      title: 'Practical 1 — React Router',
       points: 30,
       maxPoints: 80,
       status: 'FAIL',

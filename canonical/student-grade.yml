@@ -1,4 +1,4 @@
-name: ProjectHub — автотести
+name: ProjectHub automatic tests
 
 on:
   push:

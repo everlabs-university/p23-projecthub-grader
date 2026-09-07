@@ -58,7 +58,7 @@ function spawnCollected(command, args, cwd) {
 
 async function runGit(args, cwd) {
   const { code, stdout, stderr } = await spawnCollected('git', args, cwd);
-  assert.equal(code, 0, `git ${args.join(' ')} завершився кодом ${code}: ${stderr.trim()}`);
+  assert.equal(code, 0, `git ${args.join(' ')} exited with code ${code}: ${stderr.trim()}`);
   return stdout.trim();
 }
 
@@ -82,13 +82,13 @@ async function createStudentRepo(root) {
   await runGit(['add', '--all'], root);
   await runGit(['commit', '--message', 'feat: complete React Router practical'], root);
   const head = await runGit(['rev-parse', 'HEAD'], root);
-  assert.match(head, /^[0-9a-f]{40}$/, 'фікстура мусить дати 40-символьний HEAD');
-  assert.equal(await runGit(['status', '--porcelain'], root), '', 'фікстура мусить бути чистою');
+  assert.match(head, /^[0-9a-f]{40}$/, 'the fixture must produce a 40-character HEAD');
+  assert.equal(await runGit(['status', '--porcelain'], root), '', 'the fixture must be clean');
   return head;
 }
 
 function assertTamperRejected(candidateText, reason) {
-  assert.notEqual(candidateText, CANONICAL_TEXT, `${reason}: підміна мусить змінити байти`);
+  assert.notEqual(candidateText, CANONICAL_TEXT, `${reason}: tampering must change the bytes`);
   const result = auditWorkflow({ candidateText, canonicalText: CANONICAL_TEXT });
   assert.equal(result.valid, false, reason);
   assert.notEqual(result.candidateSha256, result.canonicalSha256, reason);
@@ -97,6 +97,10 @@ function assertTamperRejected(candidateText, reason) {
 }
 
 describe('auditWorkflow', () => {
+  it('declares the English ProjectHub workflow name in the canonical workflow', () => {
+    assert.match(CANONICAL_TEXT, /^name: ProjectHub automatic tests$/m);
+  });
+
   it('accepts a byte-identical canonical workflow with matching lowercase SHA-256 values', () => {
     const result = auditWorkflow({ candidateText: CANONICAL_TEXT, canonicalText: CANONICAL_TEXT });
     assert.equal(result.valid, true);
@@ -107,11 +111,11 @@ describe('auditWorkflow', () => {
   });
 
   it('rejects one changed reusable workflow ref with distinct hashes', () => {
-    assertTamperRejected(CANONICAL_TEXT.replace('@semester-2026', '@semester-2025'), 'змінений ref reusable workflow');
+    assertTamperRejected(CANONICAL_TEXT.replace('@semester-2026', '@semester-2025'), 'changed reusable workflow ref');
   });
 
   it('rejects a workflow whose push event is disabled', () => {
-    assertTamperRejected(CANONICAL_TEXT.replace('  push:\n', ''), 'вимкнений push event');
+    assertTamperRejected(CANONICAL_TEXT.replace('  push:\n', ''), 'disabled push event');
   });
 
   it('rejects a workflow with an extra bypass job', () => {
@@ -121,12 +125,12 @@ describe('auditWorkflow', () => {
     steps:
       - run: echo "80/80 PASS"
 `,
-      'доданий bypass job',
+      'added bypass job',
     );
   });
 
   it('rejects a CRLF-only difference because the audit compares exact bytes', () => {
-    assertTamperRejected(CANONICAL_TEXT.replace(/\n/g, '\r\n'), 'лише CRLF замість LF');
+    assertTamperRejected(CANONICAL_TEXT.replace(/\n/g, '\r\n'), 'CRLF instead of LF only');
   });
 });
 
@@ -152,21 +156,21 @@ describe('node scripts/audit-submission.mjs', () => {
 
   it('rejects a wrong expected 40-character HEAD and exits nonzero', { timeout: AUDIT_TIMEOUT_MS }, async () => {
     const head = await createStudentRepo(studentRoot);
-    assert.match(WRONG_SHA, /^[0-9a-f]{40}$/, 'очікуваний SHA мусить бути валідним за формою');
-    assert.notEqual(WRONG_SHA, head, 'очікуваний SHA мусить відрізнятися від HEAD');
+    assert.match(WRONG_SHA, /^[0-9a-f]{40}$/, 'the expected SHA must be well-formed');
+    assert.notEqual(WRONG_SHA, head, 'the expected SHA must differ from HEAD');
     const result = await runAudit({ studentRoot, expectedSha: WRONG_SHA });
-    assert.notEqual(result.code, 0, 'невідповідний HEAD мусить давати ненульовий код виходу');
+    assert.notEqual(result.code, 0, 'a mismatched HEAD must exit nonzero');
     assert.doesNotMatch(result.stdout, /\bVALID\b/);
-    assert.notEqual(`${result.stdout}${result.stderr}`.trim(), '', 'відхилення мусить бути пояснене');
+    assert.notEqual(`${result.stdout}${result.stderr}`.trim(), '', 'a rejection must be explained');
   });
 
   it('rejects a dirty working tree and exits nonzero', { timeout: AUDIT_TIMEOUT_MS }, async () => {
     const head = await createStudentRepo(studentRoot);
-    await writeFile(join(studentRoot, 'README.md'), '# ProjectHub\n\nлокальна незакомічена правка\n', 'utf8');
-    assert.notEqual(await runGit(['status', '--porcelain'], studentRoot), '', 'фікстура мусить бути справді брудною');
+    await writeFile(join(studentRoot, 'README.md'), '# ProjectHub\n\nlocal uncommitted edit\n', 'utf8');
+    assert.notEqual(await runGit(['status', '--porcelain'], studentRoot), '', 'the fixture must really be dirty');
     const result = await runAudit({ studentRoot, expectedSha: head });
-    assert.notEqual(result.code, 0, 'брудне робоче дерево мусить давати ненульовий код виходу');
+    assert.notEqual(result.code, 0, 'a dirty working tree must exit nonzero');
     assert.doesNotMatch(result.stdout, /\bVALID\b/);
-    assert.notEqual(`${result.stdout}${result.stderr}`.trim(), '', 'відхилення мусить бути пояснене');
+    assert.notEqual(`${result.stdout}${result.stderr}`.trim(), '', 'a rejection must be explained');
   });
 });

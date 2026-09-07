@@ -2,7 +2,7 @@
   "name": "p23-projecthub-grader",
   "version": "1.0.0",
   "private": true,
-  "description": "ProjectHub grader for the П-23 React practicals",
+  "description": "ProjectHub grader for the P-23 React practicals",
   "type": "module",
   "license": "UNLICENSED",
   "engines": {

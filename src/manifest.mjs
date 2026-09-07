@@ -30,7 +30,7 @@ function assertRoot(root) {
   if (!isNonEmptyString(root)) {
     throw graderError(
       'ERR_GRADER_ROOT',
-      `Корінь grader має бути непорожнім шляхом, отримано ${formatValue(root)}.`,
+      `The grader root must be a non-empty path, received ${formatValue(root)}.`,
     );
   }
 }
@@ -42,12 +42,12 @@ async function readJson(path, codes) {
     raw = await readFile(path, 'utf8');
   } catch (cause) {
     if (cause?.code === 'ENOENT') {
-      throw graderError(codes.missing, `${codes.subject} відсутній: ${path}`);
+      throw graderError(codes.missing, `${codes.subject} is missing: ${path}`);
     }
 
     throw graderError(
       codes.unreadable,
-      `${codes.subject} неможливо прочитати (${path}): ${cause?.message ?? cause}`,
+      `${codes.subject} cannot be read (${path}): ${cause?.message ?? cause}`,
     );
   }
 
@@ -56,17 +56,17 @@ async function readJson(path, codes) {
   } catch (cause) {
     throw graderError(
       codes.malformed,
-      `${codes.subject} містить некоректний JSON (${path}): ${cause.message}`,
+      `${codes.subject} contains malformed JSON (${path}): ${cause.message}`,
     );
   }
 }
 
-/** Читає та валідує published.json у корені grader. */
+/** Reads and validates published.json in the grader root. */
 export async function loadPublished(root) {
   assertRoot(root);
 
   const path = join(root, 'published.json');
-  const subject = 'Файл published.json';
+  const subject = 'The published.json file';
   const manifest = await readJson(path, {
     subject,
     missing: 'ERR_MANIFEST_MISSING',
@@ -75,27 +75,27 @@ export async function loadPublished(root) {
   });
 
   if (!isPlainObject(manifest)) {
-    throw graderError('ERR_MANIFEST_SHAPE', `${subject} (${path}) має бути JSON-об'єктом.`);
+    throw graderError('ERR_MANIFEST_SHAPE', `${subject} (${path}) must be a JSON object.`);
   }
 
   if (manifest.schemaVersion !== SCHEMA_VERSION) {
     throw graderError(
       'ERR_MANIFEST_SCHEMA_VERSION',
-      `${subject}: schemaVersion має бути ${SCHEMA_VERSION}, отримано ${formatValue(manifest.schemaVersion)}.`,
+      `${subject}: schemaVersion must be ${SCHEMA_VERSION}, received ${formatValue(manifest.schemaVersion)}.`,
     );
   }
 
   if (!isNonEmptyString(manifest.graderVersion)) {
     throw graderError(
       'ERR_MANIFEST_SHAPE',
-      `${subject}: graderVersion має бути непорожнім рядком, отримано ${formatValue(manifest.graderVersion)}.`,
+      `${subject}: graderVersion must be a non-empty string, received ${formatValue(manifest.graderVersion)}.`,
     );
   }
 
   if (!Array.isArray(manifest.labs)) {
     throw graderError(
       'ERR_MANIFEST_SHAPE',
-      `${subject}: labs має бути масивом ідентифікаторів практичних, отримано ${formatValue(manifest.labs)}.`,
+      `${subject}: labs must be an array of lab ids, received ${formatValue(manifest.labs)}.`,
     );
   }
 
@@ -106,14 +106,14 @@ export async function loadPublished(root) {
     if (!isNonEmptyString(labId)) {
       throw graderError(
         'ERR_MANIFEST_SHAPE',
-        `${subject}: labs[${index}] має бути непорожнім рядком, отримано ${formatValue(labId)}.`,
+        `${subject}: labs[${index}] must be a non-empty string, received ${formatValue(labId)}.`,
       );
     }
 
     if (seenLabs.has(labId)) {
       throw graderError(
         'ERR_MANIFEST_DUPLICATE_LAB',
-        `${subject}: практична «${labId}» вказана в labs більше одного разу.`,
+        `${subject}: lab "${labId}" is listed in labs more than once.`,
       );
     }
 
@@ -128,19 +128,19 @@ export async function loadPublished(root) {
   };
 }
 
-/** Читає та валідує labs/<labId>/rubric.json у корені grader. */
+/** Reads and validates labs/<labId>/rubric.json in the grader root. */
 export async function loadRubric(root, labId) {
   assertRoot(root);
 
   if (!isNonEmptyString(labId)) {
     throw graderError(
       'ERR_RUBRIC_LAB_ID',
-      `Ідентифікатор практичної має бути непорожнім рядком, отримано ${formatValue(labId)}.`,
+      `The lab id must be a non-empty string, received ${formatValue(labId)}.`,
     );
   }
 
   const path = join(root, 'labs', labId, 'rubric.json');
-  const subject = `Файл rubric практичної «${labId}»`;
+  const subject = `The rubric file for lab "${labId}"`;
   const rubric = await readJson(path, {
     subject,
     missing: 'ERR_RUBRIC_MISSING',
@@ -149,34 +149,34 @@ export async function loadRubric(root, labId) {
   });
 
   if (!isPlainObject(rubric)) {
-    throw graderError('ERR_RUBRIC_SHAPE', `${subject} (${path}) має бути JSON-об'єктом.`);
+    throw graderError('ERR_RUBRIC_SHAPE', `${subject} (${path}) must be a JSON object.`);
   }
 
   if (rubric.id !== labId) {
     throw graderError(
       'ERR_RUBRIC_ID_MISMATCH',
-      `${subject}: id має дорівнювати «${labId}», отримано ${formatValue(rubric.id)}.`,
+      `${subject}: id must equal "${labId}", received ${formatValue(rubric.id)}.`,
     );
   }
 
   if (!isNonEmptyString(rubric.title)) {
     throw graderError(
       'ERR_RUBRIC_SHAPE',
-      `${subject}: title має бути непорожнім рядком, отримано ${formatValue(rubric.title)}.`,
+      `${subject}: title must be a non-empty string, received ${formatValue(rubric.title)}.`,
     );
   }
 
   if (rubric.maxPoints !== MAX_POINTS) {
     throw graderError(
       'ERR_RUBRIC_MAX_POINTS',
-      `${subject}: maxPoints має бути рівно ${MAX_POINTS}, отримано ${formatValue(rubric.maxPoints)}.`,
+      `${subject}: maxPoints must be exactly ${MAX_POINTS}, received ${formatValue(rubric.maxPoints)}.`,
     );
   }
 
   if (!Array.isArray(rubric.tests) || rubric.tests.length === 0) {
     throw graderError(
       'ERR_RUBRIC_SHAPE',
-      `${subject}: tests має бути непорожнім масивом перевірок, отримано ${formatValue(rubric.tests)}.`,
+      `${subject}: tests must be a non-empty array of checks, received ${formatValue(rubric.tests)}.`,
     );
   }
 
@@ -188,28 +188,28 @@ export async function loadRubric(root, labId) {
     if (!isPlainObject(test)) {
       throw graderError(
         'ERR_RUBRIC_SHAPE',
-        `${subject}: tests[${index}] має бути JSON-об'єктом, отримано ${formatValue(test)}.`,
+        `${subject}: tests[${index}] must be a JSON object, received ${formatValue(test)}.`,
       );
     }
 
     if (!isNonEmptyString(test.fullName)) {
       throw graderError(
         'ERR_RUBRIC_SHAPE',
-        `${subject}: tests[${index}].fullName має бути непорожнім рядком, отримано ${formatValue(test.fullName)}.`,
+        `${subject}: tests[${index}].fullName must be a non-empty string, received ${formatValue(test.fullName)}.`,
       );
     }
 
     if (!isPointValue(test.points)) {
       throw graderError(
         'ERR_RUBRIC_SHAPE',
-        `${subject}: tests[${index}].points має бути невід'ємним цілим числом, отримано ${formatValue(test.points)}.`,
+        `${subject}: tests[${index}].points must be a non-negative integer, received ${formatValue(test.points)}.`,
       );
     }
 
     if (seenTests.has(test.fullName)) {
       throw graderError(
         'ERR_RUBRIC_DUPLICATE_TEST',
-        `${subject}: перевірка «${test.fullName}» вказана більше одного разу.`,
+        `${subject}: check "${test.fullName}" is listed more than once.`,
       );
     }
 
@@ -221,7 +221,7 @@ export async function loadRubric(root, labId) {
   if (weightsTotal !== MAX_POINTS) {
     throw graderError(
       'ERR_RUBRIC_WEIGHTS',
-      `${subject}: сума ваг перевірок дорівнює ${weightsTotal}, а має бути рівно ${MAX_POINTS}.`,
+      `${subject}: the test weights total ${weightsTotal} but must be exactly ${MAX_POINTS}.`,
     );
   }
 
@@ -232,7 +232,7 @@ export async function loadRubric(root, labId) {
   ) {
     throw graderError(
       'ERR_RUBRIC_PASS_THRESHOLD',
-      `${subject}: passPoints має бути цілим числом у межах 0..${MAX_POINTS}, отримано ${formatValue(rubric.passPoints)}.`,
+      `${subject}: passPoints must be an integer within 0..${MAX_POINTS}, received ${formatValue(rubric.passPoints)}.`,
     );
   }
 

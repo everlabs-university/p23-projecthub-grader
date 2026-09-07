@@ -1,16 +1,16 @@
 {
   "id": "pr01",
-  "title": "Практична №1 — React Router",
+  "title": "Practical 1 — React Router",
   "maxPoints": 80,
   "passPoints": 48,
   "tests": [
-    { "fullName": "/ показує головну сторінку ProjectHub", "points": 10 },
-    { "fullName": "/projects показує список проєктів", "points": 10 },
-    { "fullName": "/projects/:projectId показує сторінку конкретного проєкту", "points": 10 },
-    { "fullName": "невідомий URL показує сторінку 404", "points": 10 },
-    { "fullName": "навігація через UI змінює маршрут без повного reload", "points": 10 },
-    { "fullName": "прямий перехід на detail route працює", "points": 10 },
-    { "fullName": "відсутній projectId обробляється контрольовано", "points": 10 },
-    { "fullName": "базові посилання мають доступні назви", "points": 10 }
+    { "fullName": "/ renders the ProjectHub home page", "points": 10 },
+    { "fullName": "/projects renders the project list", "points": 10 },
+    { "fullName": "/projects/:projectId renders a single project page", "points": 10 },
+    { "fullName": "an unknown URL renders the 404 page", "points": 10 },
+    { "fullName": "UI navigation changes the route without a full reload", "points": 10 },
+    { "fullName": "direct entry to a detail route works", "points": 10 },
+    { "fullName": "a missing projectId is handled gracefully", "points": 10 },
+    { "fullName": "primary links have accessible names", "points": 10 }
   ]
 }

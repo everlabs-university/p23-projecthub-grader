@@ -1,28 +1,28 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 /**
- * Known-bad фікстура PR01: навмисно неповна робота студента рівно на 40/80.
+ * Known-bad PR01 fixture: deliberately incomplete student work worth exactly 40/80.
  *
- * Реалізовано: `/`, `/projects`, контрольований `/projects/` і доступна навігація.
- * Свідомо відсутнє: маршрут `/projects/:projectId`, catch-all 404 та клієнтські
- * переходи — посилання зроблено звичайними <a href>, тому маршрут змінює лише
- * повне перезавантаження сторінки.
+ * Implemented: `/`, `/projects`, a graceful `/projects/` and accessible navigation.
+ * Deliberately missing: the `/projects/:projectId` route, the catch-all 404 and
+ * client-side transitions — the links are plain <a href> elements, so the route
+ * only changes through a full page reload.
  *
- * Якщо фікстура колись почне проходити п'яту поведінку — послаблюємо фікстуру,
- * а не набір тестів.
+ * If the fixture ever starts passing the fifth behaviour, relax the fixture,
+ * not the test suite.
  */
 
 const PROJECTS = [
-  { id: 'onboarding', title: 'Онбординг команди' },
-  { id: 'analytics', title: 'Аналітика продукту' },
-  { id: 'mobile-app', title: 'Мобільний застосунок' },
+  { id: 'onboarding', title: 'Team onboarding' },
+  { id: 'analytics', title: 'Product analytics' },
+  { id: 'mobile-app', title: 'Mobile app' },
 ];
 
 function HomePage() {
   return (
     <section>
       <h1>ProjectHub</h1>
-      <p>Місце, де команда бачить усі свої проєкти в одному списку.</p>
+      <p>The place where the team sees all of its projects in a single list.</p>
     </section>
   );
 }
@@ -30,7 +30,7 @@ function HomePage() {
 function ProjectsPage() {
   return (
     <section>
-      <h1>Проєкти</h1>
+      <h1>Projects</h1>
       <ul>
         {PROJECTS.map((project) => (
           <li key={project.id}>
@@ -47,9 +47,9 @@ export default function App() {
     <BrowserRouter>
       <div className="app">
         <header>
-          <nav aria-label="Основна навігація">
-            <a href="/">Головна</a>
-            <a href="/projects">Проєкти</a>
+          <nav aria-label="Main navigation">
+            <a href="/">Home</a>
+            <a href="/projects">Projects</a>
           </nav>
         </header>
         <main>

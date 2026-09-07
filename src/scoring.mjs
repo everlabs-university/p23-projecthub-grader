@@ -23,28 +23,28 @@ function assertRubric(rubric) {
   if (!isPlainObject(rubric)) {
     throw scoringError(
       'ERR_SCORING_RUBRIC',
-      `Rubric має бути об'єктом, отримано ${formatValue(rubric)}.`,
+      `The rubric must be an object, received ${formatValue(rubric)}.`,
     );
   }
 
   if (!isNonEmptyString(rubric.id) || !isNonEmptyString(rubric.title)) {
     throw scoringError(
       'ERR_SCORING_RUBRIC',
-      'Rubric має містити непорожні рядки id та title.',
+      'The rubric must contain non-empty id and title strings.',
     );
   }
 
   if (!Number.isInteger(rubric.maxPoints) || !Number.isInteger(rubric.passPoints)) {
     throw scoringError(
       'ERR_SCORING_RUBRIC',
-      `Rubric «${rubric.id}» має містити цілі maxPoints і passPoints.`,
+      `Rubric "${rubric.id}" must contain integer maxPoints and passPoints.`,
     );
   }
 
   if (!Array.isArray(rubric.tests)) {
     throw scoringError(
       'ERR_SCORING_RUBRIC',
-      `Rubric «${rubric.id}»: tests має бути масивом, отримано ${formatValue(rubric.tests)}.`,
+      `Rubric "${rubric.id}": tests must be an array, received ${formatValue(rubric.tests)}.`,
     );
   }
 
@@ -52,7 +52,7 @@ function assertRubric(rubric) {
     if (!isPlainObject(test) || !isNonEmptyString(test.fullName) || !Number.isInteger(test.points)) {
       throw scoringError(
         'ERR_SCORING_RUBRIC',
-        `Rubric «${rubric.id}»: tests[${index}] має містити непорожній fullName і ціле points.`,
+        `Rubric "${rubric.id}": tests[${index}] must contain a non-empty fullName and integer points.`,
       );
     }
   }
@@ -62,7 +62,7 @@ function collectPassedByName(assertions) {
   if (!Array.isArray(assertions)) {
     throw scoringError(
       'ERR_SCORING_ASSERTIONS',
-      `Результати тестів мають бути масивом, отримано ${formatValue(assertions)}.`,
+      `Test results must be an array, received ${formatValue(assertions)}.`,
     );
   }
 
@@ -72,21 +72,21 @@ function collectPassedByName(assertions) {
     if (!isPlainObject(assertion)) {
       throw scoringError(
         'ERR_SCORING_ASSERTIONS',
-        `Результат тесту [${index}] має бути об'єктом, отримано ${formatValue(assertion)}.`,
+        `Test result [${index}] must be an object, received ${formatValue(assertion)}.`,
       );
     }
 
     if (!isNonEmptyString(assertion.fullName)) {
       throw scoringError(
         'ERR_SCORING_ASSERTIONS',
-        `Результат тесту [${index}]: fullName має бути непорожнім рядком, отримано ${formatValue(assertion.fullName)}.`,
+        `Test result [${index}]: fullName must be a non-empty string, received ${formatValue(assertion.fullName)}.`,
       );
     }
 
     if (!KNOWN_STATUSES.has(assertion.status)) {
       throw scoringError(
         'ERR_SCORING_ASSERTIONS',
-        `Результат тесту «${assertion.fullName}»: status має бути passed, failed або skipped, отримано ${formatValue(assertion.status)}.`,
+        `Test result "${assertion.fullName}": status must be passed, failed or skipped, received ${formatValue(assertion.status)}.`,
       );
     }
 
@@ -98,7 +98,7 @@ function collectPassedByName(assertions) {
   return passedByName;
 }
 
-/** Чистий підрахунок балів однієї практичної; inputs не змінюються. */
+/** Pure scoring for a single lab; the inputs are never mutated. */
 export function scoreLab(rubric, assertions) {
   assertRubric(rubric);
 

@@ -1,8 +1,8 @@
-const HEADING = '## ProjectHub — автотести';
-const TABLE_HEADER = '| Практична | Автотести | Статус |';
+const HEADING = '## ProjectHub automatic tests';
+const TABLE_HEADER = '| Practical | Automatic tests | Status |';
 const TABLE_DIVIDER = '| --- | --- | --- |';
 const PROVISIONAL_NOTE =
-  'Результат є попереднім до локального повторного прогону канонічного grader на цьому самому SHA.';
+  'This result is provisional until the canonical grader is re-run locally on the same SHA.';
 const KNOWN_STATUSES = new Set(['PASS', 'FAIL']);
 
 function summaryError(message) {
@@ -33,60 +33,60 @@ function escapeCell(value) {
 function renderRow(labScore, index) {
   if (!isPlainObject(labScore)) {
     throw summaryError(
-      `labScores[${index}] має бути об'єктом, отримано ${formatValue(labScore)}.`,
+      `labScores[${index}] must be an object, received ${formatValue(labScore)}.`,
     );
   }
 
   if (!isNonEmptyString(labScore.title)) {
     throw summaryError(
-      `labScores[${index}].title має бути непорожнім рядком, отримано ${formatValue(labScore.title)}.`,
+      `labScores[${index}].title must be a non-empty string, received ${formatValue(labScore.title)}.`,
     );
   }
 
   if (!Number.isInteger(labScore.points) || !Number.isInteger(labScore.maxPoints)) {
     throw summaryError(
-      `labScores[${index}] має містити цілі points і maxPoints.`,
+      `labScores[${index}] must contain integer points and maxPoints.`,
     );
   }
 
   if (!KNOWN_STATUSES.has(labScore.status)) {
     throw summaryError(
-      `labScores[${index}].status має бути PASS або FAIL, отримано ${formatValue(labScore.status)}.`,
+      `labScores[${index}].status must be PASS or FAIL, received ${formatValue(labScore.status)}.`,
     );
   }
 
   return `| ${escapeCell(labScore.title)} | ${labScore.points}/${labScore.maxPoints} | ${labScore.status} |`;
 }
 
-/** Будує детермінований Markdown для GitHub step summary. */
+/** Builds the deterministic Markdown for the GitHub step summary. */
 export function renderSummary(input) {
   if (!isPlainObject(input)) {
     throw summaryError(
-      `Аргумент renderSummary має бути об'єктом, отримано ${formatValue(input)}.`,
+      `The renderSummary argument must be an object, received ${formatValue(input)}.`,
     );
   }
 
   const { sha, graderVersion, labScores } = input;
 
   if (!isNonEmptyString(sha)) {
-    throw summaryError(`sha має бути непорожнім рядком, отримано ${formatValue(sha)}.`);
+    throw summaryError(`sha must be a non-empty string, received ${formatValue(sha)}.`);
   }
 
   if (!isNonEmptyString(graderVersion)) {
     throw summaryError(
-      `graderVersion має бути непорожнім рядком, отримано ${formatValue(graderVersion)}.`,
+      `graderVersion must be a non-empty string, received ${formatValue(graderVersion)}.`,
     );
   }
 
   if (!Array.isArray(labScores)) {
-    throw summaryError(`labScores має бути масивом, отримано ${formatValue(labScores)}.`);
+    throw summaryError(`labScores must be an array, received ${formatValue(labScores)}.`);
   }
 
   return [
     HEADING,
     '',
-    `- Commit студента: \`${sha}\``,
-    `- Версія grader: \`${graderVersion}\``,
+    `- Student commit: \`${sha}\``,
+    `- Grader version: \`${graderVersion}\``,
     '',
     TABLE_HEADER,
     TABLE_DIVIDER,

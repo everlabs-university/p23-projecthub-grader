@@ -10,14 +10,14 @@ import { loadPublished, loadRubric } from '../src/manifest.mjs';
 const GRADER_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 const PR01_BEHAVIOURS = [
-  '/ показує головну сторінку ProjectHub',
-  '/projects показує список проєктів',
-  '/projects/:projectId показує сторінку конкретного проєкту',
-  'невідомий URL показує сторінку 404',
-  'навігація через UI змінює маршрут без повного reload',
-  'прямий перехід на detail route працює',
-  'відсутній projectId обробляється контрольовано',
-  'базові посилання мають доступні назви',
+  '/ renders the ProjectHub home page',
+  '/projects renders the project list',
+  '/projects/:projectId renders a single project page',
+  'an unknown URL renders the 404 page',
+  'UI navigation changes the route without a full reload',
+  'direct entry to a detail route works',
+  'a missing projectId is handled gracefully',
+  'primary links have accessible names',
 ];
 
 async function writePublished(root, text) {
@@ -33,7 +33,7 @@ describe('shipped grader manifest', () => {
   it('loads published.json with the pilot grader version and pr01 only', async () => {
     assert.deepStrictEqual(await loadPublished(GRADER_ROOT), {
       schemaVersion: 1,
-      graderVersion: '2026.09.06.1',
+      graderVersion: '2026.09.07.1',
       labs: ['pr01'],
     });
   });
@@ -42,7 +42,7 @@ describe('shipped grader manifest', () => {
     const rubric = await loadRubric(GRADER_ROOT, 'pr01');
 
     assert.equal(rubric.id, 'pr01');
-    assert.equal(rubric.title, 'Практична №1 — React Router');
+    assert.equal(rubric.title, 'Practical 1 — React Router');
     assert.equal(rubric.maxPoints, 80);
     assert.equal(rubric.passPoints, 48);
     assert.deepStrictEqual(
@@ -81,7 +81,7 @@ describe('manifest validation', () => {
       workspace,
       `{
   "schemaVersion": 1,
-  "graderVersion": "2026.09.06.1",
+  "graderVersion": "2026.09.07.1",
   "labs": ["pr01", "pr02", "pr01"]
 }
 `,
@@ -103,12 +103,12 @@ describe('manifest validation', () => {
       'pr01',
       `{
   "id": "pr01",
-  "title": "Практична №1 — React Router",
+  "title": "Practical 1 — React Router",
   "maxPoints": 80,
   "passPoints": 48,
   "tests": [
-    { "fullName": "перша поведінка", "points": 40 },
-    { "fullName": "друга поведінка", "points": 30 }
+    { "fullName": "first behaviour", "points": 40 },
+    { "fullName": "second behaviour", "points": 30 }
   ]
 }
 `,
@@ -131,12 +131,12 @@ describe('manifest validation', () => {
       'pr01',
       `{
   "id": "pr01",
-  "title": "Практична №1 — React Router",
+  "title": "Practical 1 — React Router",
   "maxPoints": 80,
   "passPoints": 96,
   "tests": [
-    { "fullName": "перша поведінка", "points": 40 },
-    { "fullName": "друга поведінка", "points": 40 }
+    { "fullName": "first behaviour", "points": 40 },
+    { "fullName": "second behaviour", "points": 40 }
   ]
 }
 `,
@@ -158,12 +158,12 @@ describe('manifest validation', () => {
       'pr01',
       `{
   "id": "pr01",
-  "title": "Практична №1 — React Router",
+  "title": "Practical 1 — React Router",
   "maxPoints": 80,
   "passPoints": -1,
   "tests": [
-    { "fullName": "перша поведінка", "points": 40 },
-    { "fullName": "друга поведінка", "points": 40 }
+    { "fullName": "first behaviour", "points": 40 },
+    { "fullName": "second behaviour", "points": 40 }
   ]
 }
 `,
@@ -185,12 +185,12 @@ describe('manifest validation', () => {
       'pr01',
       `{
   "id": "pr01",
-  "title": "Практична №1 — React Router",
+  "title": "Practical 1 — React Router",
   "maxPoints": 80,
   "passPoints": 48,
   "tests": [
-    { "fullName": "однакова назва", "points": 40 },
-    { "fullName": "однакова назва", "points": 40 }
+    { "fullName": "duplicate name", "points": 40 },
+    { "fullName": "duplicate name", "points": 40 }
   ]
 }
 `,
@@ -200,7 +200,7 @@ describe('manifest validation', () => {
       () => loadRubric(workspace, 'pr01'),
       (error) => {
         assert.equal(error.code, 'ERR_RUBRIC_DUPLICATE_TEST');
-        assert.match(error.message, /однакова назва/);
+        assert.match(error.message, /duplicate name/);
         return true;
       },
     );
@@ -211,7 +211,7 @@ describe('manifest validation', () => {
       workspace,
       `{
   "schemaVersion": 1,
-  "graderVersion": "2026.09.06.1",
+  "graderVersion": "2026.09.07.1",
   "labs": ["pr01", "pr02"]
 }
 `,
@@ -221,12 +221,12 @@ describe('manifest validation', () => {
       'pr01',
       `{
   "id": "pr01",
-  "title": "Практична №1 — React Router",
+  "title": "Practical 1 — React Router",
   "maxPoints": 80,
   "passPoints": 48,
   "tests": [
-    { "fullName": "перша поведінка", "points": 40 },
-    { "fullName": "друга поведінка", "points": 40 }
+    { "fullName": "first behaviour", "points": 40 },
+    { "fullName": "second behaviour", "points": 40 }
   ]
 }
 `,
@@ -234,7 +234,7 @@ describe('manifest validation', () => {
 
     assert.deepStrictEqual(await loadPublished(workspace), {
       schemaVersion: 1,
-      graderVersion: '2026.09.06.1',
+      graderVersion: '2026.09.07.1',
       labs: ['pr01', 'pr02'],
     });
 

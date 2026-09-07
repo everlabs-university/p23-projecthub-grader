@@ -1,24 +1,24 @@
 name: ProjectHub grader
-description: Проганяє канонічні автотести ProjectHub і публікує підсумок у GitHub step summary.
+description: Runs the canonical ProjectHub automatic tests and publishes the result to the GitHub step summary.
 
 inputs:
   student-root:
-    description: Корінь репозиторію студента, який оцінюємо.
+    description: Root of the student repository being graded.
     required: false
     default: ${{ github.workspace }}
   sha:
-    description: Commit студента, на якому запускаємо автотести.
+    description: Student commit the automatic tests are run against.
     required: false
     default: ${{ github.sha }}
   summary-file:
-    description: Файл підсумку. Порожнє значення означає $GITHUB_STEP_SUMMARY.
+    description: Summary file. An empty value means $GITHUB_STEP_SUMMARY.
     required: false
     default: ''
 
 runs:
   using: composite
   steps:
-    - name: Оцінити практичні ProjectHub
+    - name: Grade the ProjectHub practicals
       shell: bash
       env:
         STUDENT_ROOT: ${{ inputs.student-root }}

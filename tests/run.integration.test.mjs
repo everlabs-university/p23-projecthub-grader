@@ -57,7 +57,7 @@ function runGrader({ graderRoot = GRADER_ROOT, studentRoot, sha = STUDENT_SHA, s
   });
 }
 
-/** Копія grader-репозиторію, щоб псувати published.json без дотику до справжнього. */
+/** A copy of the grader repository so published.json can be broken without touching the real one. */
 async function copyGraderRoot(destination) {
   await cp(GRADER_ROOT, destination, {
     recursive: true,
@@ -147,7 +147,7 @@ describe('node src/run.mjs', () => {
         join(graderCopy, 'published.json'),
         `{
   "schemaVersion": 1,
-  "graderVersion": "2026.09.06.1",
+  "graderVersion": "2026.09.07.1",
   "labs": ["pr01"
 `,
         'utf8',
