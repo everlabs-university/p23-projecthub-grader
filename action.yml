@@ -10,10 +10,6 @@ inputs:
     description: Commit студента, на якому запускаємо автотести.
     required: false
     default: ${{ github.sha }}
-  grader-version:
-    description: Версія grader, яку показуємо в підсумку.
-    required: false
-    default: semester-2026
   summary-file:
     description: Файл підсумку. Порожнє значення означає $GITHUB_STEP_SUMMARY.
     required: false
@@ -27,11 +23,9 @@ runs:
       env:
         STUDENT_ROOT: ${{ inputs.student-root }}
         STUDENT_SHA: ${{ inputs.sha }}
-        GRADER_VERSION: ${{ inputs.grader-version }}
         SUMMARY_FILE: ${{ inputs.summary-file }}
       run: |
         node "${GITHUB_ACTION_PATH}/src/run.mjs" \
           --student-root "${STUDENT_ROOT}" \
           --sha "${STUDENT_SHA}" \
-          --grader-version "${GRADER_VERSION}" \
           --summary-file "${SUMMARY_FILE:-$GITHUB_STEP_SUMMARY}"
