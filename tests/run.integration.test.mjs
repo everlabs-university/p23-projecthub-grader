@@ -15,6 +15,7 @@ const TEMP_SUITE_DIRNAME = '.projecthub-grader';
 const STUDENT_SHA = '0123456789abcdef0123456789abcdef01234567';
 const RUN_TIMEOUT_MS = 180_000;
 const UNCOPIED_SEGMENTS = new Set(['node_modules', '.git', 'fixtures']);
+const BEHAVIOUR_STATUSES = new Set(['passed', 'failed', 'missing']);
 
 async function graderVersion() {
   const raw = await readFile(join(GRADER_ROOT, 'published.json'), 'utf8');
@@ -22,7 +23,20 @@ async function graderVersion() {
   return JSON.parse(raw).graderVersion;
 }
 
-function runGrader({ graderRoot = GRADER_ROOT, studentRoot, sha = STUDENT_SHA, summaryFile }) {
+async function rubricBehaviours() {
+  const raw = await readFile(join(GRADER_ROOT, 'labs', 'pr01', 'rubric.json'), 'utf8');
+  return JSON.parse(raw).tests.map((entry) => entry.fullName);
+}
+
+async function readResult(path) {
+  return JSON.parse(await readFile(path, 'utf8'));
+}
+
+function isIsoTimestamp(value) {
+  return typeof value === 'string' && new Date(value).toISOString() === value;
+}
+
+function runGrader({ graderRoot = GRADER_ROOT, studentRoot, sha = STUDENT_SHA, summaryFile, resultFile }) {
   const args = [
     join(graderRoot, RUNNER),
     '--student-root',
@@ -32,6 +46,8 @@ function runGrader({ graderRoot = GRADER_ROOT, studentRoot, sha = STUDENT_SHA, s
     '--summary-file',
     summaryFile,
   ];
+
+  if (resultFile !== undefined) args.push('--result-file', resultFile);
 
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, args, {
@@ -81,10 +97,12 @@ function assertTemporarySuiteRemoved(studentRoot) {
 describe('node src/run.mjs', () => {
   let workspace;
   let summaryFile;
+  let resultFile;
 
   beforeEach(async () => {
     workspace = await mkdtemp(join(tmpdir(), 'projecthub-run-'));
     summaryFile = join(workspace, 'summary.md');
+    resultFile = join(workspace, 'result.json');
   });
 
   afterEach(async () => {
@@ -192,6 +210,67 @@ describe('node src/run.mjs', () => {
       assert.equal(result.code, 2, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
       assert.notEqual(result.stderr.trim(), '', 'an infrastructure failure must be explained');
       assertTemporarySuiteRemoved(PASS_FIXTURE);
+    },
+  );
+
+  it(
+    'writes a schemaVersion 1 result file for the known-good fixture',
+    { timeout: RUN_TIMEOUT_MS },
+    async () => {
+      const version = await graderVersion();
+      const behaviours = await rubricBehaviours();
+      const result = await runGrader({ studentRoot: PASS_FIXTURE, summaryFile, resultFile });
+      assert.equal(result.code, 0, `stderr:\n${result.stderr}`);
+
+      const report = await readResult(resultFile);
+      assert.equal(report.schemaVersion, 1);
+      assert.equal(report.graderVersion, version);
+      assert.equal(report.sha, STUDENT_SHA);
+      assert.ok(isIsoTimestamp(report.generatedAt));
+      assert.equal(report.totalPoints, 80);
+      assert.equal(report.totalMaxPoints, 80);
+      assert.equal(report.labs.length, 1);
+
+      const [lab] = report.labs;
+      assert.equal(lab.id, 'pr01');
+      assert.equal(lab.points, 80);
+      assert.equal(lab.maxPoints, 80);
+      assert.equal(lab.status, 'PASS');
+      assert.deepStrictEqual(lab.tests.map((entry) => entry.fullName), behaviours);
+      assert.deepStrictEqual(lab.tests.map((entry) => entry.status), behaviours.map(() => 'passed'));
+      assert.deepStrictEqual(lab.tests.map((entry) => entry.awarded), behaviours.map(() => 10));
+      assertTemporarySuiteRemoved(PASS_FIXTURE);
+    },
+  );
+
+  it(
+    'writes a valid partial result file for the known-bad fixture even though it exits 1',
+    { timeout: RUN_TIMEOUT_MS },
+    async () => {
+      const version = await graderVersion();
+      const behaviours = await rubricBehaviours();
+      const result = await runGrader({ studentRoot: FAIL_FIXTURE, summaryFile, resultFile });
+      assert.equal(result.code, 1, `stderr:\n${result.stderr}`);
+
+      const report = await readResult(resultFile);
+      assert.equal(report.schemaVersion, 1);
+      assert.equal(report.graderVersion, version);
+      assert.equal(report.sha, STUDENT_SHA);
+      assert.ok(isIsoTimestamp(report.generatedAt));
+      assert.equal(report.totalPoints, 40);
+      assert.equal(report.totalMaxPoints, 80);
+
+      const [lab] = report.labs;
+      assert.equal(lab.id, 'pr01');
+      assert.equal(lab.points, 40);
+      assert.equal(lab.status, 'FAIL');
+      assert.deepStrictEqual(lab.tests.map((entry) => entry.fullName), behaviours);
+      assert.equal(lab.tests.reduce((total, entry) => total + entry.awarded, 0), 40);
+      assert.ok(lab.tests.some((entry) => entry.status !== 'passed'));
+      for (const entry of lab.tests) {
+        assert.ok(BEHAVIOUR_STATUSES.has(entry.status));
+      }
+      assertTemporarySuiteRemoved(FAIL_FIXTURE);
     },
   );
 });

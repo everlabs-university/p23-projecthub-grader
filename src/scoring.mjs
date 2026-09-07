@@ -1,5 +1,7 @@
 const PASSED = 'passed';
-const KNOWN_STATUSES = new Set([PASSED, 'failed', 'skipped']);
+const FAILED = 'failed';
+const MISSING = 'missing';
+const KNOWN_STATUSES = new Set([PASSED, FAILED, 'skipped']);
 
 function scoringError(code, message) {
   const error = new Error(message);
@@ -98,22 +100,33 @@ function collectPassedByName(assertions) {
   return passedByName;
 }
 
-/** Pure scoring for a single lab; the inputs are never mutated. */
+function behaviourStatus(outcome) {
+  if (outcome === undefined) return MISSING;
+  return outcome ? PASSED : FAILED;
+}
+
+/** Pure scoring for a single lab and its per-test breakdown; the inputs are never mutated. */
 export function scoreLab(rubric, assertions) {
   assertRubric(rubric);
 
   const passedByName = collectPassedByName(assertions);
 
+  const tests = [];
   let points = 0;
   let passedTests = 0;
 
   for (const test of rubric.tests) {
-    if (passedByName.get(test.fullName) !== true) {
-      continue;
-    }
-
-    points += test.points;
-    passedTests += 1;
+    const outcome = passedByName.get(test.fullName);
+    const passed = outcome === true;
+    const awarded = passed ? test.points : 0;
+    points += awarded;
+    if (passed) passedTests += 1;
+    tests.push({
+      fullName: test.fullName,
+      points: test.points,
+      awarded,
+      status: behaviourStatus(outcome),
+    });
   }
 
   return {
@@ -124,5 +137,6 @@ export function scoreLab(rubric, assertions) {
     status: points >= rubric.passPoints ? 'PASS' : 'FAIL',
     passedTests,
     totalTests: rubric.tests.length,
+    tests,
   };
 }

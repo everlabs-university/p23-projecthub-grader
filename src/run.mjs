@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import { loadPublished, loadRubric } from './manifest.mjs';
 import { parseVitestJson } from './parse-vitest.mjs';
+import { buildResult, writeResultFile } from './result-file.mjs';
 import { scoreLab } from './scoring.mjs';
 import { renderSummary } from './summary.mjs';
 
@@ -24,10 +25,11 @@ const OPTIONS = new Map([
   ['--student-root', 'studentRoot'],
   ['--sha', 'sha'],
   ['--summary-file', 'summaryFile'],
+  ['--result-file', 'resultFile'],
   ['--grader-version', 'graderVersion'],
 ]);
 
-const USAGE = 'Usage: node src/run.mjs --student-root <absolute path> --sha <40 hex> --summary-file <path> [--grader-version <version>]';
+const USAGE = 'Usage: node src/run.mjs --student-root <absolute path> --sha <40 hex> --summary-file <path> [--result-file <path>] [--grader-version <version>]';
 
 function runnerError(message) {
   const error = new Error(message);
@@ -77,6 +79,9 @@ async function validateArgs(args) {
     throw runnerError(`--sha must be a commit id of exactly 40 hex characters, received "${args.sha ?? ''}".`);
   }
   if (!isNonEmptyString(args.summaryFile)) throw runnerError(`--summary-file must be a non-empty path to the summary file. ${USAGE}`);
+  if (args.resultFile !== undefined && !isNonEmptyString(args.resultFile)) {
+    throw runnerError(`--result-file, when supplied, must be a non-empty path to the result file. ${USAGE}`);
+  }
   if (args.graderVersion !== undefined && !isNonEmptyString(args.graderVersion)) {
     throw runnerError('--grader-version, when supplied, must be a non-empty string.');
   }
@@ -154,6 +159,9 @@ async function grade(args) {
   const labScores = rubrics.map((rubric) => scoreLab(rubric, assertions));
   const summary = renderSummary({ sha: args.sha, graderVersion, labScores });
   await writeFile(args.summaryFile, summary, 'utf8');
+  if (args.resultFile !== undefined) {
+    await writeResultFile(args.resultFile, buildResult({ sha: args.sha, graderVersion, labScores }));
+  }
   process.stdout.write(summary);
   return labScores.every((labScore) => labScore.status === PASS) ? EXIT_PASS : EXIT_FAIL;
 }

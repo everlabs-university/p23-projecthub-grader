@@ -26,11 +26,14 @@ node src/run.mjs \
   --student-root /absolute/path/to/p23-projecthub-student \
   --sha <40 hex commit id> \
   --summary-file summary.md \
+  [--result-file result.json] \
   [--grader-version <version>]
 ```
 
 The suite is staged in `.projecthub-grader/` inside the student root and removed
 on every exit path; the summary is written to the file and to stdout.
+When `--result-file` is supplied, the runner also writes the complete
+machine-readable score and per-test breakdown as schema-version-1 JSON.
 
 | Exit code | Meaning |
 | --- | --- |

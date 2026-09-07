@@ -29,6 +29,22 @@ const PR01_RUBRIC = {
   ],
 };
 
+const WEIGHTED_RUBRIC = {
+  id: 'pr01',
+  title: 'Practical 1 — React Router',
+  maxPoints: 80,
+  passPoints: 48,
+  tests: [
+    { fullName: HOME, points: 30 },
+    { fullName: LIST, points: 50 },
+  ],
+};
+
+function summaryOf(score) {
+  const { tests, ...summary } = score;
+  return summary;
+}
+
 describe('scoreLab', () => {
   it('awards 80/80 and PASS when all eight behaviours pass', () => {
     const score = scoreLab(PR01_RUBRIC, [
@@ -42,7 +58,7 @@ describe('scoreLab', () => {
       { fullName: A11Y_LINKS, status: 'passed' },
     ]);
 
-    assert.deepStrictEqual(score, {
+    assert.deepStrictEqual(summaryOf(score), {
       id: 'pr01',
       title: 'Practical 1 — React Router',
       points: 80,
@@ -65,7 +81,7 @@ describe('scoreLab', () => {
       { fullName: A11Y_LINKS, status: 'failed' },
     ]);
 
-    assert.deepStrictEqual(score, {
+    assert.deepStrictEqual(summaryOf(score), {
       id: 'pr01',
       title: 'Practical 1 — React Router',
       points: 50,
@@ -88,7 +104,7 @@ describe('scoreLab', () => {
       { fullName: A11Y_LINKS, status: 'failed' },
     ]);
 
-    assert.deepStrictEqual(score, {
+    assert.deepStrictEqual(summaryOf(score), {
       id: 'pr01',
       title: 'Practical 1 — React Router',
       points: 40,
@@ -111,7 +127,7 @@ describe('scoreLab', () => {
       { fullName: A11Y_LINKS, status: 'passed' },
     ]);
 
-    assert.deepStrictEqual(score, {
+    assert.deepStrictEqual(summaryOf(score), {
       id: 'pr01',
       title: 'Practical 1 — React Router',
       points: 70,
@@ -138,7 +154,7 @@ describe('scoreLab', () => {
       { fullName: 'extra test outside the rubric #4', status: 'passed' },
     ]);
 
-    assert.deepStrictEqual(score, {
+    assert.deepStrictEqual(summaryOf(score), {
       id: 'pr01',
       title: 'Practical 1 — React Router',
       points: 40,
@@ -156,7 +172,7 @@ describe('scoreLab', () => {
       { fullName: DETAIL, status: 'passed' },
     ]);
 
-    assert.deepStrictEqual(score, {
+    assert.deepStrictEqual(summaryOf(score), {
       id: 'pr01',
       title: 'Practical 1 — React Router',
       points: 30,
@@ -165,5 +181,52 @@ describe('scoreLab', () => {
       passedTests: 3,
       totalTests: 8,
     });
+  });
+
+  it('reports a per-test breakdown in rubric order with awarded points and a status', () => {
+    const score = scoreLab(PR01_RUBRIC, [
+      { fullName: A11Y_LINKS, status: 'passed' },
+      { fullName: NOT_FOUND, status: 'skipped' },
+      { fullName: HOME, status: 'passed' },
+      { fullName: 'extra test outside the rubric', status: 'passed' },
+      { fullName: DIRECT_ENTRY, status: 'passed' },
+      { fullName: DETAIL, status: 'failed' },
+      { fullName: LIST, status: 'passed' },
+    ]);
+
+    assert.deepStrictEqual(score.tests, [
+      { fullName: HOME, points: 10, awarded: 10, status: 'passed' },
+      { fullName: LIST, points: 10, awarded: 10, status: 'passed' },
+      { fullName: DETAIL, points: 10, awarded: 0, status: 'failed' },
+      { fullName: NOT_FOUND, points: 10, awarded: 0, status: 'failed' },
+      { fullName: CLIENT_NAV, points: 10, awarded: 0, status: 'missing' },
+      { fullName: DIRECT_ENTRY, points: 10, awarded: 10, status: 'passed' },
+      { fullName: MISSING_ID, points: 10, awarded: 0, status: 'missing' },
+      { fullName: A11Y_LINKS, points: 10, awarded: 10, status: 'passed' },
+    ]);
+
+    assert.deepStrictEqual(summaryOf(score), {
+      id: 'pr01',
+      title: 'Practical 1 — React Router',
+      points: 40,
+      maxPoints: 80,
+      status: 'FAIL',
+      passedTests: 4,
+      totalTests: 8,
+    });
+  });
+
+  it('awards each behaviour its own rubric weight rather than a fixed amount', () => {
+    const score = scoreLab(WEIGHTED_RUBRIC, [
+      { fullName: HOME, status: 'passed' },
+      { fullName: LIST, status: 'failed' },
+    ]);
+
+    assert.deepStrictEqual(score.tests, [
+      { fullName: HOME, points: 30, awarded: 30, status: 'passed' },
+      { fullName: LIST, points: 50, awarded: 0, status: 'failed' },
+    ]);
+    assert.equal(score.points, 30);
+    assert.equal(score.status, 'FAIL');
   });
 });
