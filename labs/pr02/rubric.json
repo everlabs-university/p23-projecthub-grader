@@ -1,0 +1,16 @@
+{
+  "id": "pr02",
+  "title": "Practical 2 — TanStack Query",
+  "maxPoints": 80,
+  "passPoints": 48,
+  "tests": [
+    { "fullName": "a pending projects request shows a loading status", "points": 10 },
+    { "fullName": "a successful projects request renders the returned projects", "points": 10 },
+    { "fullName": "an empty projects response shows an empty state", "points": 10 },
+    { "fullName": "a failed projects request shows an accessible error", "points": 10 },
+    { "fullName": "the error state can retry the projects request", "points": 10 },
+    { "fullName": "list-to-detail navigation reuses the cached projects", "points": 10 },
+    { "fullName": "direct detail entry fetches and renders the matching project", "points": 10 },
+    { "fullName": "a background refresh keeps cached projects visible", "points": 10 }
+  ]
+}

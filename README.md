@@ -1,12 +1,16 @@
 # p23-projecthub-grader
 
 Canonical grader for the P-23 ProjectHub React practicals. Every published lab is
-scored out of **80 points**: `labs/pr01/rubric.json` weights eight behaviours at
-10 points each, and its `passPoints` is **48**, so a lab is `PASS` at 48/80 or
-above and `FAIL` below that. Scoring is a pure function of the rubric and the
-Vitest report, so the same commit always yields the same grade. The result is
-rendered as deterministic Markdown for the GitHub step summary and stays
-provisional until the canonical grader is re-run locally on the same SHA.
+scored out of **80 points**. Each rubric weights eight observable behaviours at
+10 points each and uses `passPoints: 48`. Scoring is a pure function of the
+rubric and the Vitest report, so the same commit always yields the same grade.
+The result is rendered as deterministic Markdown for the GitHub step summary
+and stays provisional until the canonical grader is re-run locally on the same
+SHA.
+
+The `pr02-tanstack-query` branch is a release candidate containing PR01 and
+PR02. It is deliberately separate from `semester-2026`; student pushes continue
+to run PR01 only until the PR02 release is explicitly promoted.
 
 ## Layout
 
@@ -17,7 +21,8 @@ provisional until the canonical grader is re-run locally on the same SHA.
 | `src/run.mjs` | Grading runner: stages the suite, runs Vitest, writes the summary. |
 | `scripts/audit-submission.mjs` | Byte-exact audit of a student submission. |
 | `canonical/student-grade.yml` | The only workflow a student repository may contain. |
-| `fixtures/pr01-pass`, `fixtures/pr01-fail` | Known-good and known-bad student repositories. |
+| `fixtures/pr02-pass` | Cumulative known-good repository: PR01 80/80 and PR02 80/80. |
+| `fixtures/pr01-fail` | Known-bad repository used to verify partial scoring and failures. |
 
 ## Grading a submission
 
@@ -55,8 +60,9 @@ node scripts/audit-submission.mjs \
 
 ## Fixtures and tests
 
-`fixtures/pr01-pass` is the known-good repository (80/80) and
-`fixtures/pr01-fail` is the known-bad repository (40/80).
+`fixtures/pr02-pass` is the cumulative known-good repository (80/80 for both
+labs). `fixtures/pr01-fail` remains deliberately incomplete: it scores 40/80 in
+PR01 and 0/80 in PR02.
 
 ```sh
 npm ci

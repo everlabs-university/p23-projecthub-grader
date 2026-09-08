@@ -20,6 +20,17 @@ const PR01_BEHAVIOURS = [
   'primary links have accessible names',
 ];
 
+const PR02_BEHAVIOURS = [
+  'a pending projects request shows a loading status',
+  'a successful projects request renders the returned projects',
+  'an empty projects response shows an empty state',
+  'a failed projects request shows an accessible error',
+  'the error state can retry the projects request',
+  'list-to-detail navigation reuses the cached projects',
+  'direct detail entry fetches and renders the matching project',
+  'a background refresh keeps cached projects visible',
+];
+
 async function writePublished(root, text) {
   await writeFile(join(root, 'published.json'), text, 'utf8');
 }
@@ -30,11 +41,11 @@ async function writeRubric(root, labId, text) {
 }
 
 describe('shipped grader manifest', () => {
-  it('loads published.json with the pilot grader version and pr01 only', async () => {
+  it('loads the PR02 draft manifest with both cumulative practicals', async () => {
     assert.deepStrictEqual(await loadPublished(GRADER_ROOT), {
       schemaVersion: 1,
-      graderVersion: '2026.09.07.1',
-      labs: ['pr01'],
+      graderVersion: '2026.09.08.1-draft',
+      labs: ['pr01', 'pr02'],
     });
   });
 
@@ -48,6 +59,23 @@ describe('shipped grader manifest', () => {
     assert.deepStrictEqual(
       rubric.tests.map((entry) => entry.fullName),
       PR01_BEHAVIOURS,
+    );
+    assert.deepStrictEqual(
+      rubric.tests.map((entry) => entry.points),
+      [10, 10, 10, 10, 10, 10, 10, 10],
+    );
+  });
+
+  it('loads the pr02 rubric as eight ten-point behaviours totalling 80 with a 48 pass mark', async () => {
+    const rubric = await loadRubric(GRADER_ROOT, 'pr02');
+
+    assert.equal(rubric.id, 'pr02');
+    assert.equal(rubric.title, 'Practical 2 — TanStack Query');
+    assert.equal(rubric.maxPoints, 80);
+    assert.equal(rubric.passPoints, 48);
+    assert.deepStrictEqual(
+      rubric.tests.map((entry) => entry.fullName),
+      PR02_BEHAVIOURS,
     );
     assert.deepStrictEqual(
       rubric.tests.map((entry) => entry.points),

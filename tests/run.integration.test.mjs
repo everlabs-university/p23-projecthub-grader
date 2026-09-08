@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const GRADER_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const RUNNER = join('src', 'run.mjs');
-const PASS_FIXTURE = join(GRADER_ROOT, 'fixtures', 'pr01-pass');
+const PASS_FIXTURE = join(GRADER_ROOT, 'fixtures', 'pr02-pass');
 const FAIL_FIXTURE = join(GRADER_ROOT, 'fixtures', 'pr01-fail');
 const TEMP_SUITE_DIRNAME = '.projecthub-grader';
 const STUDENT_SHA = '0123456789abcdef0123456789abcdef01234567';
@@ -23,8 +23,8 @@ async function graderVersion() {
   return JSON.parse(raw).graderVersion;
 }
 
-async function rubricBehaviours() {
-  const raw = await readFile(join(GRADER_ROOT, 'labs', 'pr01', 'rubric.json'), 'utf8');
+async function rubricBehaviours(labId) {
+  const raw = await readFile(join(GRADER_ROOT, 'labs', labId, 'rubric.json'), 'utf8');
   return JSON.parse(raw).tests.map((entry) => entry.fullName);
 }
 
@@ -112,7 +112,7 @@ describe('node src/run.mjs', () => {
   });
 
   it(
-    'scores the known-good fixture 80/80 PASS and exits 0',
+    'scores the cumulative known-good fixture 80/80 in both practicals and exits 0',
     { timeout: RUN_TIMEOUT_MS },
     async () => {
       const version = await graderVersion();
@@ -218,7 +218,11 @@ describe('node src/run.mjs', () => {
     { timeout: RUN_TIMEOUT_MS },
     async () => {
       const version = await graderVersion();
-      const behaviours = await rubricBehaviours();
+      const behavioursByLab = new Map(
+        await Promise.all(
+          ['pr01', 'pr02'].map(async (labId) => [labId, await rubricBehaviours(labId)]),
+        ),
+      );
       const result = await runGrader({ studentRoot: PASS_FIXTURE, summaryFile, resultFile });
       assert.equal(result.code, 0, `stderr:\n${result.stderr}`);
 
@@ -227,18 +231,20 @@ describe('node src/run.mjs', () => {
       assert.equal(report.graderVersion, version);
       assert.equal(report.sha, STUDENT_SHA);
       assert.ok(isIsoTimestamp(report.generatedAt));
-      assert.equal(report.totalPoints, 80);
-      assert.equal(report.totalMaxPoints, 80);
-      assert.equal(report.labs.length, 1);
+      assert.equal(report.totalPoints, 160);
+      assert.equal(report.totalMaxPoints, 160);
+      assert.equal(report.labs.length, 2);
 
-      const [lab] = report.labs;
-      assert.equal(lab.id, 'pr01');
-      assert.equal(lab.points, 80);
-      assert.equal(lab.maxPoints, 80);
-      assert.equal(lab.status, 'PASS');
-      assert.deepStrictEqual(lab.tests.map((entry) => entry.fullName), behaviours);
-      assert.deepStrictEqual(lab.tests.map((entry) => entry.status), behaviours.map(() => 'passed'));
-      assert.deepStrictEqual(lab.tests.map((entry) => entry.awarded), behaviours.map(() => 10));
+      for (const lab of report.labs) {
+        const behaviours = behavioursByLab.get(lab.id);
+        assert.ok(behaviours, `unexpected lab in the cumulative result: ${lab.id}`);
+        assert.equal(lab.points, 80);
+        assert.equal(lab.maxPoints, 80);
+        assert.equal(lab.status, 'PASS');
+        assert.deepStrictEqual(lab.tests.map((entry) => entry.fullName), behaviours);
+        assert.deepStrictEqual(lab.tests.map((entry) => entry.status), behaviours.map(() => 'passed'));
+        assert.deepStrictEqual(lab.tests.map((entry) => entry.awarded), behaviours.map(() => 10));
+      }
       assertTemporarySuiteRemoved(PASS_FIXTURE);
     },
   );
@@ -248,7 +254,7 @@ describe('node src/run.mjs', () => {
     { timeout: RUN_TIMEOUT_MS },
     async () => {
       const version = await graderVersion();
-      const behaviours = await rubricBehaviours();
+      const behaviours = await rubricBehaviours('pr01');
       const result = await runGrader({ studentRoot: FAIL_FIXTURE, summaryFile, resultFile });
       assert.equal(result.code, 1, `stderr:\n${result.stderr}`);
 
@@ -258,7 +264,8 @@ describe('node src/run.mjs', () => {
       assert.equal(report.sha, STUDENT_SHA);
       assert.ok(isIsoTimestamp(report.generatedAt));
       assert.equal(report.totalPoints, 40);
-      assert.equal(report.totalMaxPoints, 80);
+      assert.equal(report.totalMaxPoints, 160);
+      assert.equal(report.labs.length, 2);
 
       const [lab] = report.labs;
       assert.equal(lab.id, 'pr01');
@@ -270,6 +277,11 @@ describe('node src/run.mjs', () => {
       for (const entry of lab.tests) {
         assert.ok(BEHAVIOUR_STATUSES.has(entry.status));
       }
+
+      const pr02 = report.labs[1];
+      assert.equal(pr02.id, 'pr02');
+      assert.equal(pr02.points, 0);
+      assert.equal(pr02.status, 'FAIL');
       assertTemporarySuiteRemoved(FAIL_FIXTURE);
     },
   );
