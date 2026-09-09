@@ -8,9 +8,8 @@ The result is rendered as deterministic Markdown for the GitHub step summary
 and stays provisional until the canonical grader is re-run locally on the same
 SHA.
 
-The `pr02-tanstack-query` branch is a release candidate containing PR01 and
-PR02. It is deliberately separate from `semester-2026`; student pushes continue
-to run PR01 only until the PR02 release is explicitly promoted.
+The `semester-2026` branch currently publishes PR01, PR02, and PR03. Student
+pushes run all three practicals cumulatively.
 
 ## Layout
 
@@ -21,7 +20,7 @@ to run PR01 only until the PR02 release is explicitly promoted.
 | `src/run.mjs` | Grading runner: stages the suite, runs Vitest, writes the summary. |
 | `scripts/audit-submission.mjs` | Byte-exact audit of a student submission. |
 | `canonical/student-grade.yml` | The only workflow a student repository may contain. |
-| `fixtures/pr02-pass` | Cumulative known-good repository: PR01 80/80 and PR02 80/80. |
+| `fixtures/pr03-pass` | Cumulative known-good repository: PR01, PR02, and PR03 each score 80/80. |
 | `fixtures/pr01-fail` | Known-bad repository used to verify partial scoring and failures. |
 
 ## Grading a submission
@@ -60,9 +59,9 @@ node scripts/audit-submission.mjs \
 
 ## Fixtures and tests
 
-`fixtures/pr02-pass` is the cumulative known-good repository (80/80 for both
-labs). `fixtures/pr01-fail` remains deliberately incomplete: it scores 40/80 in
-PR01 and 0/80 in PR02.
+`fixtures/pr03-pass` is the cumulative known-good repository (80/80 for all
+three labs). `fixtures/pr01-fail` remains deliberately incomplete: it scores
+40/80 in PR01 and 0/80 in PR02 and PR03.
 
 ```sh
 npm ci

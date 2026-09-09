@@ -1,0 +1,16 @@
+{
+  "id": "pr03",
+  "title": "Practical 3 — Forms and Zod",
+  "maxPoints": 80,
+  "passPoints": 48,
+  "tests": [
+    { "fullName": "/projects/new renders a labelled create-project form", "points": 10 },
+    { "fullName": "/projects links to the create-project form", "points": 10 },
+    { "fullName": "an empty submission reports every required text field", "points": 10 },
+    { "fullName": "trimmed values shorter than the schema limits are rejected", "points": 10 },
+    { "fullName": "the description character count updates with the field", "points": 10 },
+    { "fullName": "reset restores the form defaults and clears errors", "points": 10 },
+    { "fullName": "a valid submission navigates to a generated project URL", "points": 10 },
+    { "fullName": "the created project is available from the shared projects cache", "points": 10 }
+  ]
+}
