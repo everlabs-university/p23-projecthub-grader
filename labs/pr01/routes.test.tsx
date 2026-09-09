@@ -50,7 +50,10 @@ function titlePattern(title: string): RegExp {
 function projectLinks(): HTMLElement[] {
   return screen
     .getAllByRole('link')
-    .filter((link) => PROJECT_HREF.test(link.getAttribute('href') ?? ''));
+    .filter((link) => {
+      const href = link.getAttribute('href') ?? '';
+      return href !== '/projects/new' && PROJECT_HREF.test(href);
+    });
 }
 
 async function waitForProjectLinks(minimum = 1): Promise<HTMLElement[]> {
