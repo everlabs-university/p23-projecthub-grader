@@ -1,0 +1,16 @@
+{
+  "id": "pr05",
+  "title": "Practical 5 — Auth flow",
+  "maxPoints": 80,
+  "passPoints": 48,
+  "tests": [
+    { "fullName": "a protected route waits while the session is being checked", "points": 10 },
+    { "fullName": "an anonymous visitor is redirected to login with the requested route preserved", "points": 10 },
+    { "fullName": "the login screen exposes an accessible form and the demo credentials", "points": 10 },
+    { "fullName": "invalid login values are rejected before authentication", "points": 10 },
+    { "fullName": "wrong demo credentials produce a form-level authentication error", "points": 10 },
+    { "fullName": "valid credentials return the user to the protected route and show their identity", "points": 10 },
+    { "fullName": "an authenticated session is restored after the application remounts", "points": 10 },
+    { "fullName": "signing out clears the session and protects the route again", "points": 10 }
+  ]
+}
