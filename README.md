@@ -9,7 +9,7 @@ and stays provisional until the canonical grader is re-run locally on the same
 SHA.
 
 The `semester-2026` branch contains the published cumulative grader for PR01
-through PR05. Every student push runs all five practical suites.
+through PR06. Every student push runs all six practical suites.
 
 ## Layout
 
@@ -20,7 +20,7 @@ through PR05. Every student push runs all five practical suites.
 | `src/run.mjs` | Grading runner: stages the suite, runs Vitest, writes the summary. |
 | `scripts/audit-submission.mjs` | Byte-exact audit of a student submission. |
 | `canonical/student-grade.yml` | The only workflow a student repository may contain. |
-| `fixtures/pr05-pass` | Cumulative known-good repository: PR01 through PR05 each score 80/80. |
+| `fixtures/pr06-pass` | Cumulative known-good repository: PR01 through PR06 each score 80/80. |
 | `fixtures/pr01-fail` | Known-bad repository used to verify partial scoring and failures. |
 
 ## Grading a submission
@@ -59,9 +59,9 @@ node scripts/audit-submission.mjs \
 
 ## Fixtures and tests
 
-`fixtures/pr05-pass` is the cumulative known-good repository (80/80 for all
-five labs). `fixtures/pr01-fail` remains deliberately incomplete: it scores
-40/80 in PR01 and 0/80 in PR02 through PR05.
+`fixtures/pr06-pass` is the cumulative known-good repository (80/80 for all
+six labs). `fixtures/pr01-fail` remains deliberately incomplete: it scores
+40/80 in PR01 and 0/80 in PR02 through PR06.
 
 ```sh
 npm ci
