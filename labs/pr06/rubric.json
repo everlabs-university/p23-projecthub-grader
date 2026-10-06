@@ -1,0 +1,16 @@
+{
+  "id": "pr06",
+  "title": "Practical 6 — Radix UI primitives",
+  "maxPoints": 80,
+  "passPoints": 48,
+  "tests": [
+    { "fullName": "display settings opens an accessible menu for workspace preferences", "points": 10 },
+    { "fullName": "display settings can switch the catalog to compact view", "points": 10 },
+    { "fullName": "display settings can show only favorite projects", "points": 10 },
+    { "fullName": "a project exposes a quick view that opens an accessible dialog", "points": 10 },
+    { "fullName": "quick view presents the selected project summary owner and status", "points": 10 },
+    { "fullName": "Escape closes quick view and restores focus to its trigger", "points": 10 },
+    { "fullName": "each quick view uses the data for the project that opened it", "points": 10 },
+    { "fullName": "quick view links to the selected project route", "points": 10 }
+  ]
+}

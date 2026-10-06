@@ -64,6 +64,17 @@ const PR05_BEHAVIOURS = [
   'signing out clears the session and protects the route again',
 ];
 
+const PR06_BEHAVIOURS = [
+  'display settings opens an accessible menu for workspace preferences',
+  'display settings can switch the catalog to compact view',
+  'display settings can show only favorite projects',
+  'a project exposes a quick view that opens an accessible dialog',
+  'quick view presents the selected project summary owner and status',
+  'Escape closes quick view and restores focus to its trigger',
+  'each quick view uses the data for the project that opened it',
+  'quick view links to the selected project route',
+];
+
 async function writePublished(root, text) {
   await writeFile(join(root, 'published.json'), text, 'utf8');
 }
@@ -74,11 +85,11 @@ async function writeRubric(root, labId, text) {
 }
 
 describe('shipped grader manifest', () => {
-  it('loads the PR05 draft manifest with all cumulative practicals', async () => {
+  it('loads the PR06 draft manifest with all cumulative practicals', async () => {
     assert.deepStrictEqual(await loadPublished(GRADER_ROOT), {
       schemaVersion: 1,
-      graderVersion: '2026.09.09.3-draft',
-      labs: ['pr01', 'pr02', 'pr03', 'pr04', 'pr05'],
+      graderVersion: '2026.10.06.2-draft',
+      labs: ['pr01', 'pr02', 'pr03', 'pr04', 'pr05', 'pr06'],
     });
   });
 
@@ -160,6 +171,23 @@ describe('shipped grader manifest', () => {
     assert.deepStrictEqual(
       rubric.tests.map((entry) => entry.fullName),
       PR05_BEHAVIOURS,
+    );
+    assert.deepStrictEqual(
+      rubric.tests.map((entry) => entry.points),
+      [10, 10, 10, 10, 10, 10, 10, 10],
+    );
+  });
+
+  it('loads the pr06 rubric as eight ten-point behaviours totalling 80 with a 48 pass mark', async () => {
+    const rubric = await loadRubric(GRADER_ROOT, 'pr06');
+
+    assert.equal(rubric.id, 'pr06');
+    assert.equal(rubric.title, 'Practical 6 — Radix UI primitives');
+    assert.equal(rubric.maxPoints, 80);
+    assert.equal(rubric.passPoints, 48);
+    assert.deepStrictEqual(
+      rubric.tests.map((entry) => entry.fullName),
+      PR06_BEHAVIOURS,
     );
     assert.deepStrictEqual(
       rubric.tests.map((entry) => entry.points),
