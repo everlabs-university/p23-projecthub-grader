@@ -75,6 +75,17 @@ const PR06_BEHAVIOURS = [
   'quick view links to the selected project route',
 ];
 
+const PR07_BEHAVIOURS = [
+  'the project exposes a deterministic jsdom test command',
+  'the shared test setup installs DOM matchers and resets request handlers',
+  'routing tests drive ProjectHub through accessible user interactions',
+  'server-state tests intercept the projects API with MSW',
+  'projects tests cover loading and successful server data',
+  'projects tests cover a failed request and retry recovery',
+  'auth tests cover protected redirects and return navigation',
+  'dialog tests cover Escape dismissal and focus restoration',
+];
+
 async function writePublished(root, text) {
   await writeFile(join(root, 'published.json'), text, 'utf8');
 }
@@ -85,11 +96,11 @@ async function writeRubric(root, labId, text) {
 }
 
 describe('shipped grader manifest', () => {
-  it('loads the published PR06 manifest with all cumulative practicals', async () => {
+  it('loads the published PR07 manifest with all cumulative practicals', async () => {
     assert.deepStrictEqual(await loadPublished(GRADER_ROOT), {
       schemaVersion: 1,
-      graderVersion: '2026.10.15.1',
-      labs: ['pr01', 'pr02', 'pr03', 'pr04', 'pr05', 'pr06'],
+      graderVersion: '2026.10.19.2',
+      labs: ['pr01', 'pr02', 'pr03', 'pr04', 'pr05', 'pr06', 'pr07'],
     });
   });
 
@@ -193,6 +204,17 @@ describe('shipped grader manifest', () => {
       rubric.tests.map((entry) => entry.points),
       [10, 10, 10, 10, 10, 10, 10, 10],
     );
+  });
+
+  it('loads the pr07 rubric as eight ten-point behaviours totalling 80 with a 48 pass mark', async () => {
+    const rubric = await loadRubric(GRADER_ROOT, 'pr07');
+
+    assert.equal(rubric.id, 'pr07');
+    assert.equal(rubric.title, 'Practical 7 — Testing stack');
+    assert.equal(rubric.maxPoints, 80);
+    assert.equal(rubric.passPoints, 48);
+    assert.deepStrictEqual(rubric.tests.map((entry) => entry.fullName), PR07_BEHAVIOURS);
+    assert.deepStrictEqual(rubric.tests.map((entry) => entry.points), Array(8).fill(10));
   });
 
   it('has a rubric for every published lab', async () => {

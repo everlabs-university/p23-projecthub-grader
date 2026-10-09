@@ -1,0 +1,16 @@
+{
+  "id": "pr07",
+  "title": "Practical 7 — Testing stack",
+  "maxPoints": 80,
+  "passPoints": 48,
+  "tests": [
+    { "fullName": "the project exposes a deterministic jsdom test command", "points": 10 },
+    { "fullName": "the shared test setup installs DOM matchers and resets request handlers", "points": 10 },
+    { "fullName": "routing tests drive ProjectHub through accessible user interactions", "points": 10 },
+    { "fullName": "server-state tests intercept the projects API with MSW", "points": 10 },
+    { "fullName": "projects tests cover loading and successful server data", "points": 10 },
+    { "fullName": "projects tests cover a failed request and retry recovery", "points": 10 },
+    { "fullName": "auth tests cover protected redirects and return navigation", "points": 10 },
+    { "fullName": "dialog tests cover Escape dismissal and focus restoration", "points": 10 }
+  ]
+}
