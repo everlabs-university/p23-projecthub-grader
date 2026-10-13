@@ -49,6 +49,14 @@ function fillValidForm() {
 
 beforeEach(() => {
   window.history.pushState({}, '', '/');
+  window.sessionStorage.setItem(
+    'projecthub-session',
+    JSON.stringify({
+      id: 'student-1',
+      name: 'Alex Morgan',
+      email: 'student@projecthub.dev',
+    }),
+  );
   vi.stubGlobal(
     'fetch',
     vi.fn(async () =>
@@ -62,6 +70,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  window.sessionStorage.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });

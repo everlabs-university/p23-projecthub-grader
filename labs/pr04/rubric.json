@@ -1,0 +1,16 @@
+{
+  "id": "pr04",
+  "title": "Practical 4 — Zustand workspace",
+  "maxPoints": 80,
+  "passPoints": 48,
+  "tests": [
+    { "fullName": "/projects renders workspace controls with the documented defaults", "points": 10 },
+    { "fullName": "status filtering keeps only matching server projects", "points": 10 },
+    { "fullName": "a project can be added to and removed from favorites", "points": 10 },
+    { "fullName": "favorites-only view renders only saved projects", "points": 10 },
+    { "fullName": "favorite state is shared with the project detail route", "points": 10 },
+    { "fullName": "compact view becomes the active catalog presentation", "points": 10 },
+    { "fullName": "workspace choices are persisted in local storage", "points": 10 },
+    { "fullName": "reset workspace restores every preference to its default", "points": 10 }
+  ]
+}
