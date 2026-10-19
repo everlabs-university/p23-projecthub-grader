@@ -136,6 +136,45 @@ describe('node src/run.mjs', () => {
   );
 
   it(
+    'isolates Practical 2 checks when a valid app keeps one query client at module scope',
+    { timeout: RUN_TIMEOUT_MS },
+    async () => {
+      const graderCopy = join(workspace, 'grader');
+      const studentCopy = join(workspace, 'student');
+      await copyGraderRoot(graderCopy);
+      await cp(PASS_FIXTURE, studentCopy, { recursive: true });
+      await symlink(join(GRADER_ROOT, 'node_modules'), join(studentCopy, 'node_modules'), 'junction');
+
+      const appPath = join(studentCopy, 'src', 'App.tsx');
+      const originalApp = await readFile(appPath, 'utf8');
+      const withoutHook = originalApp
+        .replace("import { useState } from 'react';\n", '')
+        .replace(/  const \[queryClient\] = useState\([\s\S]*?\n  \);\n\n/, '');
+      assert.notEqual(withoutHook, originalApp, 'the fixture must replace its query client lifecycle');
+      const singletonApp = withoutHook.replace(
+        'export default function App() {',
+        "const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });\n\nexport default function App() {",
+      );
+      await writeFile(appPath, singletonApp, 'utf8');
+      await writeFile(
+        join(graderCopy, 'published.json'),
+        JSON.stringify({ schemaVersion: 1, graderVersion: 'isolation-regression', labs: ['pr02'] }),
+        'utf8',
+      );
+
+      const result = await runGrader({
+        graderRoot: graderCopy,
+        studentRoot: studentCopy,
+        summaryFile,
+        resultFile,
+      });
+      const report = await readResult(resultFile);
+      assert.equal(report.labs[0].points, 80, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+      assert.equal(result.code, 0);
+    },
+  );
+
+  it(
     'scores the known-bad fixture 40/80 FAIL and exits 1',
     { timeout: RUN_TIMEOUT_MS },
     async () => {

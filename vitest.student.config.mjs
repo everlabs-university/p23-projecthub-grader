@@ -16,6 +16,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: false,
+    setupFiles: [resolve(suiteRoot, 'vitest.student.setup.ts')],
     include: [`${SUITE_DIRNAME}/labs/**/*.test.{js,jsx,mjs,ts,tsx}`],
     exclude: ['**/node_modules/**', '**/dist/**', '**/coverage/**'],
     fileParallelism: false,

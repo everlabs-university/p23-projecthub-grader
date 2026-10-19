@@ -108,6 +108,7 @@ async function prepareSuite(studentRoot, labs) {
     await cp(source, join(suiteRoot, 'labs', labId), { recursive: true });
   }
   await cp(join(GRADER_ROOT, CONFIG_FILENAME), join(suiteRoot, CONFIG_FILENAME));
+  await cp(join(GRADER_ROOT, 'vitest.student.setup.ts'), join(suiteRoot, 'vitest.student.setup.ts'));
 }
 
 function runVitest({ vitestBin, studentRoot, configPath, reportPath }) {
