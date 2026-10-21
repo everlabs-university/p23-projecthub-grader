@@ -42,6 +42,10 @@ function normalise(text: string | null): string {
   return (text ?? '').replace(/\s+/g, ' ').trim();
 }
 
+function accessibleLinkName(link: HTMLElement): string {
+  return normalise(link.getAttribute('aria-label')) || normalise(link.textContent);
+}
+
 /** Tolerant heading lookup: "Onboarding" is also found inside "Project: Onboarding". */
 function titlePattern(title: string): RegExp {
   return new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
@@ -108,7 +112,7 @@ test('/projects/:projectId renders a single project page', async () => {
 
   const [firstProject] = links;
   const href = firstProject.getAttribute('href') ?? '';
-  const title = normalise(firstProject.textContent);
+  const title = accessibleLinkName(firstProject);
 
   expect(title).not.toBe('');
 
@@ -153,7 +157,7 @@ test('direct entry to a detail route works', async () => {
 
   const [firstProject] = links;
   const href = firstProject.getAttribute('href') ?? '';
-  const title = normalise(firstProject.textContent);
+  const title = accessibleLinkName(firstProject);
 
   expect(title).not.toBe('');
 

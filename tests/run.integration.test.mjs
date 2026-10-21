@@ -175,6 +175,88 @@ describe('node src/run.mjs', () => {
   );
 
   it(
+    'accepts a project link whose accessible name is the project name when the card contains metadata',
+    { timeout: RUN_TIMEOUT_MS },
+    async () => {
+      const graderCopy = join(workspace, 'grader');
+      const studentCopy = join(workspace, 'student');
+      await copyGraderRoot(graderCopy);
+      await cp(PASS_FIXTURE, studentCopy, { recursive: true });
+      await symlink(join(GRADER_ROOT, 'node_modules'), join(studentCopy, 'node_modules'), 'junction');
+
+      const projectsPagePath = join(studentCopy, 'src', 'pages', 'ProjectsPage.tsx');
+      const originalProjectsPage = await readFile(projectsPagePath, 'utf8');
+      const cardLink = originalProjectsPage.replace(
+        '<Link to={`/projects/${project.id}`}>{project.name}</Link>',
+        '<Link to={`/projects/${project.id}`} aria-label={project.name}><span>{project.name}</span><span>{project.summary}</span></Link>',
+      );
+      assert.notEqual(cardLink, originalProjectsPage, 'the fixture must add visible metadata to the project link');
+      await writeFile(projectsPagePath, cardLink, 'utf8');
+      await writeFile(
+        join(graderCopy, 'published.json'),
+        JSON.stringify({ schemaVersion: 1, graderVersion: 'accessible-link-regression', labs: ['pr01'] }),
+        'utf8',
+      );
+
+      const result = await runGrader({
+        graderRoot: graderCopy,
+        studentRoot: studentCopy,
+        summaryFile,
+        resultFile,
+      });
+      const report = await readResult(resultFile);
+      assert.equal(report.labs[0].points, 80, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+      assert.equal(result.code, 0);
+    },
+  );
+
+  it(
+    'accepts the created project name in a detail heading regardless of heading level',
+    { timeout: RUN_TIMEOUT_MS },
+    async () => {
+      const graderCopy = join(workspace, 'grader');
+      const studentCopy = join(workspace, 'student');
+      await copyGraderRoot(graderCopy);
+      await cp(PASS_FIXTURE, studentCopy, { recursive: true });
+      await symlink(join(GRADER_ROOT, 'node_modules'), join(studentCopy, 'node_modules'), 'junction');
+
+      const detailsPagePath = join(studentCopy, 'src', 'pages', 'ProjectDetailsPage.tsx');
+      const originalDetailsPage = await readFile(detailsPagePath, 'utf8');
+      const alternativeDetailsMarkup = originalDetailsPage
+        .replace(
+          '<h1 id="project-title">{project.name}</h1>',
+          '<h2 id="project-title">{project.name}</h2>',
+        )
+        .replace(
+          '<p className="page__lead">{project.summary}</p>',
+          '<p className="page__lead">The summary: {project.summary}</p>',
+        )
+        .replace('<dd>{project.owner}</dd>', '<dd>Project owner: {project.owner}</dd>');
+      assert.notEqual(
+        alternativeDetailsMarkup,
+        originalDetailsPage,
+        'the fixture must use an h2 and labelled detail values',
+      );
+      await writeFile(detailsPagePath, alternativeDetailsMarkup, 'utf8');
+      await writeFile(
+        join(graderCopy, 'published.json'),
+        JSON.stringify({ schemaVersion: 1, graderVersion: 'heading-level-regression', labs: ['pr03'] }),
+        'utf8',
+      );
+
+      const result = await runGrader({
+        graderRoot: graderCopy,
+        studentRoot: studentCopy,
+        summaryFile,
+        resultFile,
+      });
+      const report = await readResult(resultFile);
+      assert.equal(report.labs[0].points, 80, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+      assert.equal(result.code, 0);
+    },
+  );
+
+  it(
     'scores the known-bad fixture 40/80 FAIL and exits 1',
     { timeout: RUN_TIMEOUT_MS },
     async () => {

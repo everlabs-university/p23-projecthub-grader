@@ -187,10 +187,10 @@ test('the created project is available from the shared projects cache', async ()
   fireEvent.click(screen.getByRole('button', { name: /create project/i }));
 
   expect(
-    await screen.findByRole('heading', { name: 'Orbital Garden', level: 1 }),
+    await screen.findByRole('heading', { name: 'Orbital Garden' }),
   ).toBeInTheDocument();
-  expect(screen.getByText('A shared plan for orbital agriculture.')).toBeInTheDocument();
-  expect(screen.getByText('Marta Lee')).toBeInTheDocument();
-  expect(screen.getAllByText('In progress').length).toBeGreaterThan(0);
+  expect(screen.getByText(/A shared plan for orbital agriculture\./)).toBeInTheDocument();
+  expect(screen.getByText(/Marta Lee/)).toBeInTheDocument();
+  expect(screen.getAllByText(/In progress/).length).toBeGreaterThan(0);
   expect(window.location.pathname).toBe('/projects/orbital-garden');
 });
