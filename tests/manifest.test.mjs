@@ -99,7 +99,7 @@ describe('shipped grader manifest', () => {
   it('loads the published PR07 manifest with all cumulative practicals', async () => {
     assert.deepStrictEqual(await loadPublished(GRADER_ROOT), {
       schemaVersion: 1,
-      graderVersion: '2026.10.21.1',
+      graderVersion: '2026.10.21.2',
       labs: ['pr01', 'pr02', 'pr03', 'pr04', 'pr05', 'pr06', 'pr07'],
     });
   });

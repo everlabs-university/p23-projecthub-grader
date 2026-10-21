@@ -231,6 +231,10 @@ describe('node src/run.mjs', () => {
           '<p className="page__lead">{project.summary}</p>',
           '<p className="page__lead">The summary: {project.summary}</p>',
         )
+        .replace(
+          '<p>{project.description}</p>',
+          '<p>{project.description}</p><p>{project.owner}</p>',
+        )
         .replace('<dd>{project.owner}</dd>', '<dd>Project owner: {project.owner}</dd>');
       assert.notEqual(
         alternativeDetailsMarkup,
@@ -331,6 +335,48 @@ describe('node src/run.mjs', () => {
       assert.equal(result.code, 2, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
       assert.notEqual(result.stderr.trim(), '', 'an infrastructure failure must be explained');
       assertTemporarySuiteRemoved(PASS_FIXTURE);
+    },
+  );
+
+  it(
+    'keeps PR03 gradable when a stored session is restored asynchronously',
+    { timeout: RUN_TIMEOUT_MS },
+    async () => {
+      const graderCopy = join(workspace, 'grader');
+      const studentCopy = join(workspace, 'student');
+      await copyGraderRoot(graderCopy);
+      await cp(PASS_FIXTURE, studentCopy, { recursive: true });
+      await symlink(join(GRADER_ROOT, 'node_modules'), join(studentCopy, 'node_modules'), 'junction');
+
+      const providerPath = join(studentCopy, 'src', 'features', 'auth', 'SessionProvider.tsx');
+      const originalProvider = await readFile(providerPath, 'utf8');
+      const asyncProvider = originalProvider
+        .replace("  const [initialUser] = useState(readStoredSession);\n", '')
+        .replace(
+          "  const [user, setUser] = useState<SessionUser | null>(initialUser);\n",
+          "  const [user, setUser] = useState<SessionUser | null>(null);\n",
+        )
+        .replace(
+          "  const [status, setStatus] = useState<SessionStatus>(\n    initialUser ? 'authenticated' : 'checking',\n  );\n",
+          "  const [status, setStatus] = useState<SessionStatus>('checking');\n",
+        );
+      assert.notEqual(asyncProvider, originalProvider, 'the fixture must restore its session asynchronously');
+      await writeFile(providerPath, asyncProvider, 'utf8');
+      await writeFile(
+        join(graderCopy, 'published.json'),
+        JSON.stringify({ schemaVersion: 1, graderVersion: 'async-session-regression', labs: ['pr03'] }),
+        'utf8',
+      );
+
+      const result = await runGrader({
+        graderRoot: graderCopy,
+        studentRoot: studentCopy,
+        summaryFile,
+        resultFile,
+      });
+      const report = await readResult(resultFile);
+      assert.equal(report.labs[0].points, 80, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+      assert.equal(result.code, 0);
     },
   );
 

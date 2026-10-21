@@ -75,10 +75,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-test('/projects/new renders a labelled create-project form', () => {
+test('/projects/new renders a labelled create-project form', async () => {
   visit('/projects/new');
 
-  const form = screen.getByRole('form', { name: /create project/i });
+  const form = await screen.findByRole('form', { name: /create project/i });
 
   expect(screen.getByRole('heading', { name: /create project/i })).toBeInTheDocument();
   expect(within(form).getByRole('textbox', { name: /^name$/i })).toBeInTheDocument();
@@ -99,6 +99,7 @@ test('/projects links to the create-project form', async () => {
 
 test('an empty submission reports every required text field', async () => {
   visit('/projects/new');
+  await screen.findByRole('form', { name: /create project/i });
 
   fireEvent.click(screen.getByRole('button', { name: /create project/i }));
 
@@ -116,6 +117,7 @@ test('an empty submission reports every required text field', async () => {
 
 test('trimmed values shorter than the schema limits are rejected', async () => {
   visit('/projects/new');
+  await screen.findByRole('form', { name: /create project/i });
 
   fireEvent.change(screen.getByRole('textbox', { name: /^name$/i }), {
     target: { value: ' a ' },
@@ -137,8 +139,9 @@ test('trimmed values shorter than the schema limits are rejected', async () => {
   expect(screen.getByText('Owner must be at least 2 characters')).toBeInTheDocument();
 });
 
-test('the description character count updates with the field', () => {
+test('the description character count updates with the field', async () => {
   visit('/projects/new');
+  await screen.findByRole('form', { name: /create project/i });
 
   const description = screen.getByRole('textbox', { name: /^description$/i });
   expect(screen.getByText('0 / 240')).toBeInTheDocument();
@@ -150,6 +153,7 @@ test('the description character count updates with the field', () => {
 
 test('reset restores the form defaults and clears errors', async () => {
   visit('/projects/new');
+  await screen.findByRole('form', { name: /create project/i });
 
   fireEvent.click(screen.getByRole('button', { name: /create project/i }));
   await screen.findAllByRole('alert');
@@ -170,6 +174,7 @@ test('reset restores the form defaults and clears errors', async () => {
 
 test('a valid submission navigates to a generated project URL', async () => {
   visit('/projects/new');
+  await screen.findByRole('form', { name: /create project/i });
   fillValidForm();
 
   fireEvent.click(screen.getByRole('button', { name: /create project/i }));
@@ -179,6 +184,7 @@ test('a valid submission navigates to a generated project URL', async () => {
 
 test('the created project is available from the shared projects cache', async () => {
   visit('/projects/new');
+  await screen.findByRole('form', { name: /create project/i });
   fillValidForm();
   fireEvent.change(screen.getByRole('textbox', { name: /^name$/i }), {
     target: { value: '  Orbital Garden  ' },
@@ -190,7 +196,7 @@ test('the created project is available from the shared projects cache', async ()
     await screen.findByRole('heading', { name: 'Orbital Garden' }),
   ).toBeInTheDocument();
   expect(screen.getByText(/A shared plan for orbital agriculture\./)).toBeInTheDocument();
-  expect(screen.getByText(/Marta Lee/)).toBeInTheDocument();
+  expect(screen.getAllByText(/Marta Lee/).length).toBeGreaterThan(0);
   expect(screen.getAllByText(/In progress/).length).toBeGreaterThan(0);
   expect(window.location.pathname).toBe('/projects/orbital-garden');
 });
