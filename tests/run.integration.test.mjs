@@ -86,6 +86,14 @@ async function copyGraderRoot(destination) {
   await symlink(join(GRADER_ROOT, 'node_modules'), join(destination, 'node_modules'), 'junction');
 }
 
+async function copyStudentFixture(source, destination) {
+  await cp(source, destination, {
+    recursive: true,
+    filter: (path) => !relative(source, path).split(sep).includes('node_modules'),
+  });
+  await symlink(join(GRADER_ROOT, 'node_modules'), join(destination, 'node_modules'), 'junction');
+}
+
 function assertTemporarySuiteRemoved(studentRoot) {
   assert.equal(
     existsSync(join(studentRoot, TEMP_SUITE_DIRNAME)),
@@ -112,11 +120,13 @@ describe('node src/run.mjs', () => {
   });
 
   it(
-    'scores the cumulative known-good fixture 80/80 in all seven practicals and exits 0',
+    'scores the cumulative known-good fixture 80/80 in all eight practicals and exits 0',
     { timeout: RUN_TIMEOUT_MS },
     async () => {
       const version = await graderVersion();
-      const result = await runGrader({ studentRoot: PASS_FIXTURE, summaryFile });
+      const studentCopy = join(workspace, 'student');
+      await copyStudentFixture(PASS_FIXTURE, studentCopy);
+      const result = await runGrader({ studentRoot: studentCopy, summaryFile });
 
       assert.equal(result.code, 0, `stderr:\n${result.stderr}`);
 
@@ -131,7 +141,7 @@ describe('node src/run.mjs', () => {
       );
       assert.ok(summary.includes(STUDENT_SHA), 'summary must contain the supplied student SHA');
       assert.ok(summary.includes(version), 'summary must contain the grader version');
-      assertTemporarySuiteRemoved(PASS_FIXTURE);
+      assertTemporarySuiteRemoved(studentCopy);
     },
   );
 
@@ -265,7 +275,9 @@ describe('node src/run.mjs', () => {
     { timeout: RUN_TIMEOUT_MS },
     async () => {
       const version = await graderVersion();
-      const result = await runGrader({ studentRoot: FAIL_FIXTURE, summaryFile });
+      const studentCopy = join(workspace, 'student');
+      await copyStudentFixture(FAIL_FIXTURE, studentCopy);
+      const result = await runGrader({ studentRoot: studentCopy, summaryFile });
 
       assert.equal(result.code, 1, `stderr:\n${result.stderr}`);
 
@@ -275,7 +287,7 @@ describe('node src/run.mjs', () => {
       assert.match(summary, /FAIL/);
       assert.ok(summary.includes(STUDENT_SHA), 'summary must contain the supplied student SHA');
       assert.ok(summary.includes(version), 'summary must contain the grader version');
-      assertTemporarySuiteRemoved(FAIL_FIXTURE);
+      assertTemporarySuiteRemoved(studentCopy);
     },
   );
 
@@ -385,12 +397,14 @@ describe('node src/run.mjs', () => {
     { timeout: RUN_TIMEOUT_MS },
     async () => {
       const version = await graderVersion();
+      const studentCopy = join(workspace, 'student');
+      await copyStudentFixture(PASS_FIXTURE, studentCopy);
       const behavioursByLab = new Map(
         await Promise.all(
-          ['pr01', 'pr02', 'pr03', 'pr04', 'pr05', 'pr06', 'pr07'].map(async (labId) => [labId, await rubricBehaviours(labId)]),
+          ['pr01', 'pr02', 'pr03', 'pr04', 'pr05', 'pr06', 'pr07', 'pr08'].map(async (labId) => [labId, await rubricBehaviours(labId)]),
         ),
       );
-      const result = await runGrader({ studentRoot: PASS_FIXTURE, summaryFile, resultFile });
+      const result = await runGrader({ studentRoot: studentCopy, summaryFile, resultFile });
       assert.equal(result.code, 0, `stderr:\n${result.stderr}`);
 
       const report = await readResult(resultFile);
@@ -398,9 +412,9 @@ describe('node src/run.mjs', () => {
       assert.equal(report.graderVersion, version);
       assert.equal(report.sha, STUDENT_SHA);
       assert.ok(isIsoTimestamp(report.generatedAt));
-      assert.equal(report.totalPoints, 560);
-      assert.equal(report.totalMaxPoints, 560);
-      assert.equal(report.labs.length, 7);
+      assert.equal(report.totalPoints, 640);
+      assert.equal(report.totalMaxPoints, 640);
+      assert.equal(report.labs.length, 8);
 
       for (const lab of report.labs) {
         const behaviours = behavioursByLab.get(lab.id);
@@ -412,7 +426,7 @@ describe('node src/run.mjs', () => {
         assert.deepStrictEqual(lab.tests.map((entry) => entry.status), behaviours.map(() => 'passed'));
         assert.deepStrictEqual(lab.tests.map((entry) => entry.awarded), behaviours.map(() => 10));
       }
-      assertTemporarySuiteRemoved(PASS_FIXTURE);
+      assertTemporarySuiteRemoved(studentCopy);
     },
   );
 
@@ -422,7 +436,9 @@ describe('node src/run.mjs', () => {
     async () => {
       const version = await graderVersion();
       const behaviours = await rubricBehaviours('pr01');
-      const result = await runGrader({ studentRoot: FAIL_FIXTURE, summaryFile, resultFile });
+      const studentCopy = join(workspace, 'student');
+      await copyStudentFixture(FAIL_FIXTURE, studentCopy);
+      const result = await runGrader({ studentRoot: studentCopy, summaryFile, resultFile });
       assert.equal(result.code, 1, `stderr:\n${result.stderr}`);
 
       const report = await readResult(resultFile);
@@ -431,8 +447,8 @@ describe('node src/run.mjs', () => {
       assert.equal(report.sha, STUDENT_SHA);
       assert.ok(isIsoTimestamp(report.generatedAt));
       assert.equal(report.totalPoints, 40);
-      assert.equal(report.totalMaxPoints, 560);
-      assert.equal(report.labs.length, 7);
+      assert.equal(report.totalMaxPoints, 640);
+      assert.equal(report.labs.length, 8);
 
       const [lab] = report.labs;
       assert.equal(lab.id, 'pr01');
@@ -474,7 +490,7 @@ describe('node src/run.mjs', () => {
       assert.equal(pr07.id, 'pr07');
       assert.equal(pr07.points, 0);
       assert.equal(pr07.status, 'FAIL');
-      assertTemporarySuiteRemoved(FAIL_FIXTURE);
+      assertTemporarySuiteRemoved(studentCopy);
     },
   );
 });

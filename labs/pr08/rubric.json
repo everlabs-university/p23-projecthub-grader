@@ -1,0 +1,16 @@
+{
+  "id": "pr08",
+  "title": "Practical 8 — XState workflows",
+  "maxPoints": 80,
+  "passPoints": 48,
+  "tests": [
+    { "fullName": "the project installs XState and its React integration", "points": 10 },
+    { "fullName": "the workflow starts in draft with clean typed context", "points": 10 },
+    { "fullName": "editing the review note updates workflow context immutably", "points": 10 },
+    { "fullName": "submission is guarded until the review note is meaningful", "points": 10 },
+    { "fullName": "requesting changes returns the workflow to draft with feedback", "points": 10 },
+    { "fullName": "a revised project can be submitted again and approved", "points": 10 },
+    { "fullName": "the workflow panel exposes the current state and available actions accessibly", "points": 10 },
+    { "fullName": "the workflow panel completes the draft review approval user flow", "points": 10 }
+  ]
+}
