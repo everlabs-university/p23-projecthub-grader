@@ -17,6 +17,10 @@ const PASSING_LAB = {
   status: 'PASS',
   passedTests: 6,
   totalTests: 8,
+  tests: [
+    { fullName: 'home route renders', points: 10, awarded: 10, status: 'passed' },
+    { fullName: 'unknown route renders not found', points: 10, awarded: 0, status: 'failed' },
+  ],
 };
 
 const FAILING_LAB = {
@@ -27,6 +31,10 @@ const FAILING_LAB = {
   status: 'FAIL',
   passedTests: 4,
   totalTests: 8,
+  tests: [
+    { fullName: 'workspace defaults render', points: 10, awarded: 10, status: 'passed' },
+    { fullName: 'workspace reset works', points: 10, awarded: 0, status: 'missing' },
+  ],
 };
 
 function scoreRowsOf(markdown) {
@@ -92,6 +100,34 @@ describe('renderSummary', () => {
 
     assert.match(markdown, /^\| Practical 1 — React Router \| 60\/80 \| PASS \|$/m);
     assert.equal(scoreRowsOf(markdown).length, 1);
+  });
+
+  it('renders a public per-check breakdown for every practical', () => {
+    const markdown = renderSummary({
+      sha: STUDENT_SHA,
+      graderVersion: '2026.09.07.1',
+      labScores: [PASSING_LAB, FAILING_LAB],
+    });
+
+    assert.match(markdown, /^### Practical 1 — React Router — 60\/80 PASS$/m);
+    assert.match(markdown, /^\| Check \| Points \| Result \|$/m);
+    assert.match(markdown, /^\| home route renders \| 10\/10 \| PASS \|$/m);
+    assert.match(markdown, /^\| unknown route renders not found \| 0\/10 \| FAIL \|$/m);
+    assert.match(markdown, /^### Practical 2 — Application state — 40\/80 FAIL$/m);
+    assert.match(markdown, /^\| workspace reset works \| 0\/10 \| FAIL \|$/m);
+  });
+
+  it('explains that a red workflow is a grading result rather than a grader crash', () => {
+    const markdown = renderSummary({
+      sha: STUDENT_SHA,
+      graderVersion: '2026.09.07.1',
+      labScores: [PASSING_LAB, FAILING_LAB],
+    });
+
+    assert.match(
+      markdown,
+      /> Grading completed\. A red workflow means at least one published practical is below the pass score; the grader itself did not crash\./,
+    );
   });
 
   it('states that the result is provisional until the exact-SHA local audit', () => {
